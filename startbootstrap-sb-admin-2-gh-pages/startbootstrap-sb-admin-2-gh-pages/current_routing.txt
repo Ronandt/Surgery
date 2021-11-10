@@ -1,0 +1,51 @@
+@blueprint_assets.route("/cards")
+def cards():
+    return render_template("utilities-cards.html")
+
+@blueprint_assets.route("/buttons")
+def buttons():
+    return render_template("utilities-buttons.html")
+    
+@blueprint_assets.route("/animation")    
+def animation():
+    return render_template("utilities-animation.html")
+
+@blueprint_assets.route("/border")
+def border():
+    return render_template("utilities-border.html")
+
+@blueprint_assets.route("/color")
+def color():
+    return render_template("utilities-color.html")
+
+@blueprint_assets.route("/other")
+def other():
+    return render_template("utilities-other.html")
+
+@blueprint_assets.route("/charts")
+def charts():
+    return render_template("utilities-charts.html")
+
+@blueprint_assets.route("/tables")
+def tables():
+    return render_template("utilities-tables.html")
+    
+@blueprint_assets.route("/home")
+def home_index():
+    return render_template("utilities-index.html")
+
+@blueprint_assets.route("/login")
+def login_index():
+    return render_template("utilities-login.html")
+
+@blueprint_assets.route("/register")
+def register_index():
+    return render_template("utilities-register.html")
+
+@blueprint_assets.route("/blank")
+def blank_index():
+    return render_template("utilities-blank-base.html")
+
+@blueprint_assets.route("/404")
+def err_index():
+    return render_template("utilities-404.html")
