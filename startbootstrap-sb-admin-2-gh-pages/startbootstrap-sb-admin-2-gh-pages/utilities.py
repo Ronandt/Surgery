@@ -47,10 +47,11 @@ def login_index():
 def register_index():
     return render_template("utilities-register.html")
 
-@blueprint_utilities.route("/blank")
-def blank_index():
-    return render_template("utilities-blank-base.html")
 
-@blueprint_utilities.route("/404")
-def err_index():
+@blueprint_utilities.route("/forgot")
+def forgot_index():
+    return render_template("utilities-forgot-password.html")
+    
+@blueprint_utilities.route("/err")
+def err():
     return render_template("utilities-404.html")
