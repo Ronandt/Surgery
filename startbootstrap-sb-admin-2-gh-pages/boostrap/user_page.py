@@ -3,8 +3,8 @@ from flask_login.utils import login_required
 from Forms import RegisterForm, LoginForm
 from models import User
 from __init__ import db
-from werkzeug.security import generate_password_hash,  check_password_hash 
-from flask_login import login_user, login_required
+from werkzeug.security import generate_password_hash,  check_password_hash, gen_salt #trying to salt it later
+from flask_login import login_user, login_required, logout_user, current_user
 
 
 
@@ -15,6 +15,7 @@ user_page = Blueprint("user_page", __name__)
 @user_page.route("/")
 @login_required
 def main_html():
+   
     return render_template("page-index-3.html")
 
 
@@ -30,7 +31,7 @@ def user_login():
             if user.staff == 0:
                 return redirect(url_for('user_page.main_html'))
             elif user.staff == 1:
-                return redirect(url_for('blueprint_utilities.tables'))
+                return redirect(url_for('blueprint_utilities.home_index'))
             else:
                 return "how"
         else:
@@ -63,10 +64,12 @@ def user_register():
 
 @user_page.route("/products")
 def products():
+
     return render_template("page-listing-grid.html")
 
 @user_page.route("/cart")
 def cart():
+    
     return render_template("page-shopping-cart.html")
 
 @user_page.route("/account")
@@ -75,16 +78,28 @@ def account():
 
 @user_page.route("/feedback")
 def feedback():
+ 
     return render_template("page-reports.html")
     
 @user_page.route("/funds")
 def funds():
+  
     return render_template("page-funds.html")
 
 @user_page.route("/chatbot")
 def chatbot():
+ 
     return render_template("page-chatbot.html")
 
 @user_page.route("/about_us")
 def about_us():
+   
     return render_template("page-content.html")
+
+
+@user_page.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("user_page.user_login"))
+        

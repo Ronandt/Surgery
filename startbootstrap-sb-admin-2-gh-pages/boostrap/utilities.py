@@ -22,7 +22,7 @@ user = current_user
 @login_required
 @blueprint_utilities.route("/cards")
 def cards():
-    if user.staff == 0:
+    if not current_user.is_authenticated or user.staff == 0:
          return redirect(url_for('user_page.main_html'))
     return render_template("utilities-cards.html")
 
@@ -30,7 +30,7 @@ def cards():
 @login_required
 @blueprint_utilities.route("/buttons")
 def buttons():
-    if user.staff == 0:
+    if not current_user.is_authenticated or user.staff == 0:
          return redirect(url_for('user_page.main_html'))
     return render_template("utilities-buttons.html")
 
@@ -38,7 +38,7 @@ def buttons():
 @login_required  
 @blueprint_utilities.route("/animation")    
 def animation():
-    if user.staff == 0:
+    if not current_user.is_authenticated or user.staff == 0:
          return redirect(url_for('user_page.main_html'))
     return render_template("utilities-animation.html")
 
@@ -46,28 +46,28 @@ def animation():
 @login_required
 @blueprint_utilities.route("/border")
 def border():
-    if user.staff == 0:
+    if not current_user.is_authenticated or user.staff == 0:
          return redirect(url_for('user_page.main_html'))
     return render_template("utilities-border.html")
 
 @login_required
 @blueprint_utilities.route("/color")
 def color():
-    if user.staff == 0:
+    if not current_user.is_authenticated or user.staff == 0:
          return redirect(url_for('user_page.main_html'))
     return render_template("utilities-color.html")
 
 @login_required
 @blueprint_utilities.route("/other")
 def other():
-    if user.staff == 0:
+    if not current_user.is_authenticated or user.staff == 0:
          return redirect(url_for('user_page.main_html'))
     return render_template("utilities-other.html")
     
 @login_required
 @blueprint_utilities.route("/charts")
 def charts():
-    if user.staff == 0:
+    if not current_user.is_authenticated or user.staff == 0:
          return redirect(url_for('user_page.main_html'))
     return render_template("utilities-charts.html")
 
@@ -75,7 +75,7 @@ def charts():
 @blueprint_utilities.route("/tables")
 def tables():
     
-    if user.staff == 0:
+    if not current_user.is_authenticated or user.staff == 0:
          return redirect(url_for('user_page.main_html'))
     users = User.query.all()
     return render_template("utilities-tables.html", users = users)
@@ -83,31 +83,35 @@ def tables():
 @login_required
 @blueprint_utilities.route("/home")
 def home_index():
-    if user.staff == 0:
+    if not current_user.is_authenticated or user.staff == 0:
          return redirect(url_for('user_page.main_html'))
     return render_template("utilities-index.html")
+
 @login_required
 @blueprint_utilities.route("/login")
 def login_index():
-    if user.staff == 0:
+    if not current_user.is_authenticated or user.staff == 0:
          return redirect(url_for('user_page.main_html'))
+     
     return render_template("utilities-login.html")
+
 @login_required
 @blueprint_utilities.route("/register")
 def register_index():
-    if user.staff == 0:
+    if not current_user.is_authenticated or user.staff == 0:
          return redirect(url_for('user_page.main_html'))
     return render_template("utilities-register.html")
 
 @login_required
 @blueprint_utilities.route("/forgot")
 def forgot_index():
-    if user.staff == 0:
+    if not current_user.is_authenticated or user.staff == 0:
          return redirect(url_for('user_page.main_html'))
     return render_template("utilities-forgot-password.html")
+
 @login_required  
 @blueprint_utilities.route("/err")
 def err():
-    if user.staff == 0:
+    if not current_user.is_authenticated or user.staff == 0:
          return redirect(url_for('user_page.main_html'))
     return render_template("utilities-404.html")
