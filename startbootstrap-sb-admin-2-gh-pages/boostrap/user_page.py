@@ -61,12 +61,30 @@ def user_register():
     return render_template("page-user-register.html", register_user_form = register_user_form)
 
 
+@user_page.route("/products")
+def products():
+    return render_template("page-listing-grid.html")
+
+@user_page.route("/cart")
+def cart():
+    return render_template("page-shopping-cart.html")
+
 @user_page.route("/account")
-def user_forgot():
-    pass
-        
-    return render_template("page-profile-main")
+def account():
+    return render_template("page-profile-main.html")
 
 @user_page.route("/feedback")
 def feedback():
-    return ""
+    return render_template("page-reports.html")
+    
+@user_page.route("/funds")
+def funds():
+    return render_template("page-funds.html")
+
+@user_page.route("/chatbot")
+def chatbot():
+    return render_template("page-chatbot.html")
+
+@user_page.route("/about_us")
+def about_us():
+    return render_template("page-content.html")
