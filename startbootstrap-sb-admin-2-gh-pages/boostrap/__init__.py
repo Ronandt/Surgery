@@ -24,9 +24,10 @@ def create_app():
     app.register_blueprint(user_page, url_prefix="/")
 
     with app.app_context(): #SQLAlchemy does not allow this code to run in a non-app context, hence, you have to create an environment (a function) to do so
-        staff = [User(staff = 1, username = "Candice", email="staff@gmail.com", gender="F",  password = generate_password_hash("bruhhh", method="sha256"))]
+        staff = [User(staff = 1, username = "Candice", email="staff@gmail.com", gender="F", money = 10000000000, password = generate_password_hash("bruhhh", method="sha256")), User(staff = 0, username = "Cock", email="cock@gmail.com", gender="F", money = 0,  password = generate_password_hash("bruhhh", method="sha256"))]
         for x in staff:
             if not User.query.filter_by(id = x.id).first() and not User.query.filter_by(email = x.email).first() and not User.query.filter_by(username = x.username).first():
+               
                 print("Staff Added!")
                 db.session.add(x)
                 db.session.commit()

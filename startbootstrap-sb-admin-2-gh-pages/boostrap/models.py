@@ -9,3 +9,4 @@ class User(db.Model, UserMixin): #UserMixin for flask login #db model for sqlalc
     gender = db.Column(db.String(10))
     password = db.Column(db.String(150))
     staff = db.Column(db.Integer)
+    money = db.Column(db.Integer)

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login.utils import login_required
-from Forms import RegisterForm, LoginForm
+from Forms import RegisterForm, LoginForm, AddFundsForm
 from models import User
 from __init__ import db
 from werkzeug.security import generate_password_hash,  check_password_hash, gen_salt #trying to salt it later
@@ -81,10 +81,16 @@ def feedback():
  
     return render_template("page-reports.html")
     
-@user_page.route("/funds")
+@user_page.route("/funds", methods=["GET", "POST"])
 def funds():
-  
-    return render_template("page-funds.html")
+    funds_form = AddFundsForm(request.form)
+    if request.method == "POST" and check_password_hash(current_user.password, funds_form.password.data):
+        current_user.money += funds_form.amount.data 
+        db.session.commit()
+        flash(f"${funds_form.amount.data} added!", category="success")
+
+        
+    return render_template("page-funds.html", funds_form = funds_form)
 
 @user_page.route("/chatbot")
 def chatbot():

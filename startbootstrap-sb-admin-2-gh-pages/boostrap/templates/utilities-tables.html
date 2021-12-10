@@ -46,6 +46,7 @@
                                             <th>Name</th>
                                             <th>Gender</th>
                                             <th>Email</th>
+                                            <th>Balance</th>
                                             <th>Edit</th>
                                         </tr>
                                     </thead>
@@ -56,6 +57,7 @@
                                             <th>Name</th>
                                             <th>Gender</th>
                                             <th>Email</th>
+                                            <th>Balance</th>
                                             <th>Edit</th>
                                         </tr>
                                     </tfoot>
@@ -67,7 +69,8 @@
                                             <td>{{x.username}}</td>
                                             <td>{{x.gender}}</td>
                                             <td>{{x.email}}</td>
-
+                                            <td>{{"$ " + '{:,}'.format(x.money)}}</td>
+            
                                             <td><form action="{{ url_for('blueprint_utilities.deleteUser')}}" class="d-inline-block" method="POST">
                                                 <input type="hidden" name="id" value="{{ x.id }}">
                                                 
