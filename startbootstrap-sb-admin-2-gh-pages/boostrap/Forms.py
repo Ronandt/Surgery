@@ -1,4 +1,4 @@
-from wtforms import Form, StringField, SelectField, BooleanField, validators, PasswordField
+from wtforms import Form, StringField, SelectField, BooleanField, validators, PasswordField, HiddenField
 from wtforms.fields import EmailField
 
 class RegisterForm(Form):
@@ -14,7 +14,6 @@ class LoginForm(Form):
     password = PasswordField('', [validators.Length(min=6, max=35), validators.DataRequired()], render_kw={"placeholder" : "Enter Password"})
 
 class StaffForm(Form): #implmentation will be later
-    
     username = StringField("", [validators.Length(min=2, max=40), validators.DataRequired()], render_kw={"placeholder" : "Enter Username"})
     password = PasswordField('', [validators.Length(min=6, max=35), validators.DataRequired()], render_kw={"placeholder" : "Enter Password"})
-    
+

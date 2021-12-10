@@ -41,22 +41,22 @@
                                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
+                                            <th>ID</th>
+                                            <th>Power</th>
                                             <th>Name</th>
-                                            <th>Position</th>
-                                            <th>Office</th>
-                                            <th>Age</th>
-                                            <th>Start date</th>
-                                            <th>Salary</th>
+                                            <th>Gender</th>
+                                            <th>Email</th>
+                                            <th>Edit</th>
                                         </tr>
                                     </thead>
                                     <tfoot>
                                         <tr>
+                                            <th>ID</th>
+                                            <th>Power</th>
                                             <th>Name</th>
-                                            <th>Position</th>
-                                            <th>Office</th>
-                                            <th>Age</th>
-                                            <th>Start date</th>
-                                            <th>Salary</th>
+                                            <th>Gender</th>
+                                            <th>Email</th>
+                                            <th>Edit</th>
                                         </tr>
                                     </tfoot>
                                     <tbody>
@@ -67,7 +67,13 @@
                                             <td>{{x.username}}</td>
                                             <td>{{x.gender}}</td>
                                             <td>{{x.email}}</td>
-                                            <td>{{x.password}}</td>
+
+                                            <td><form action="{{ url_for('blueprint_utilities.deleteUser')}}" class="d-inline-block" method="POST">
+                                                <input type="hidden" name="id" value="{{ x.id }}">
+                                                
+                                            <button type="submit" class="btn btn-danger">Delete</button>   
+                                            </form>
+                                            </td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>

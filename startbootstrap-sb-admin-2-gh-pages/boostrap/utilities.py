@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 from models import User
+from __init__ import db
 
 blueprint_utilities = Blueprint("blueprint_utilities", __name__)
 user = current_user
@@ -25,6 +26,20 @@ def cards():
     if not current_user.is_authenticated or user.staff == 0:
          return redirect(url_for('user_page.main_html'))
     return render_template("utilities-cards.html")
+
+
+@login_required
+@blueprint_utilities.route("/deleteUser", methods=["GET", "POST"])
+def deleteUser():
+     print('test')
+     if not current_user.is_authenticated or user.staff == 0:
+          return redirect(url_for('user_page.main_html'))
+     if request.method == "POST":
+          deletes = request.form.get("id")
+          User.query.filter_by(id = deletes).delete()
+          db.session.commit()
+          print("User Deleted")
+     return redirect(url_for("blueprint_utilities.tables"))
 
 
 @login_required
@@ -77,6 +92,7 @@ def tables():
     
     if not current_user.is_authenticated or user.staff == 0:
          return redirect(url_for('user_page.main_html'))
+     
     users = User.query.all()
     return render_template("utilities-tables.html", users = users)
 
