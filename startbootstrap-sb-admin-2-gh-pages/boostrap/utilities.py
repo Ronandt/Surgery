@@ -19,115 +19,84 @@ user = current_user
 "forgot" : "utilities-forgot-password.html",
 "err" : "utilities-404.html"} '''
 
+@blueprint_utilities.before_request
+def before_request():
+    if not current_user.is_authenticated or user.staff == 0:
+        return redirect(url_for('user_page.main_html'))
 
 @login_required
 @blueprint_utilities.route("/cards")
 def cards():
-    if not current_user.is_authenticated or user.staff == 0:
-         return redirect(url_for('user_page.main_html'))
     return render_template("utilities-cards.html")
-
-
-@login_required
-@blueprint_utilities.route("/deleteUser", methods=["GET", "POST"])
-def deleteUser():
-     print('test')
-     if not current_user.is_authenticated or user.staff == 0:
-          return redirect(url_for('user_page.main_html'))
-     if request.method == "POST":
-          deletes = request.form.get("id")
-          User.query.filter_by(id = deletes).delete()
-          db.session.commit()
-          print("User Deleted")
-     return redirect(url_for("blueprint_utilities.tables"))
 
 
 @login_required
 @blueprint_utilities.route("/buttons")
 def buttons():
-    if not current_user.is_authenticated or user.staff == 0:
-         return redirect(url_for('user_page.main_html'))
     return render_template("utilities-buttons.html")
 
 
 @login_required  
 @blueprint_utilities.route("/animation")    
 def animation():
-    if not current_user.is_authenticated or user.staff == 0:
-         return redirect(url_for('user_page.main_html'))
     return render_template("utilities-animation.html")
 
 
 @login_required
 @blueprint_utilities.route("/border")
 def border():
-    if not current_user.is_authenticated or user.staff == 0:
-         return redirect(url_for('user_page.main_html'))
     return render_template("utilities-border.html")
 
 @login_required
 @blueprint_utilities.route("/color")
 def color():
-    if not current_user.is_authenticated or user.staff == 0:
-         return redirect(url_for('user_page.main_html'))
     return render_template("utilities-color.html")
 
 @login_required
 @blueprint_utilities.route("/other")
 def other():
-    if not current_user.is_authenticated or user.staff == 0:
-         return redirect(url_for('user_page.main_html'))
     return render_template("utilities-other.html")
     
 @login_required
 @blueprint_utilities.route("/charts")
 def charts():
-    if not current_user.is_authenticated or user.staff == 0:
-         return redirect(url_for('user_page.main_html'))
     return render_template("utilities-charts.html")
 
 @login_required
 @blueprint_utilities.route("/tables")
 def tables():
-    
-    if not current_user.is_authenticated or user.staff == 0:
-         return redirect(url_for('user_page.main_html'))
-     
     users = User.query.all()
     return render_template("utilities-tables.html", users = users)
 
 @login_required
 @blueprint_utilities.route("/home")
 def home_index():
-    if not current_user.is_authenticated or user.staff == 0:
-         return redirect(url_for('user_page.main_html'))
     return render_template("utilities-index.html")
 
 @login_required
 @blueprint_utilities.route("/login")
 def login_index():
-    if not current_user.is_authenticated or user.staff == 0:
-         return redirect(url_for('user_page.main_html'))
-     
     return render_template("utilities-login.html")
 
 @login_required
 @blueprint_utilities.route("/register")
 def register_index():
-    if not current_user.is_authenticated or user.staff == 0:
-         return redirect(url_for('user_page.main_html'))
+
     return render_template("utilities-register.html")
 
 @login_required
 @blueprint_utilities.route("/forgot")
 def forgot_index():
-    if not current_user.is_authenticated or user.staff == 0:
-         return redirect(url_for('user_page.main_html'))
+
     return render_template("utilities-forgot-password.html")
 
 @login_required  
 @blueprint_utilities.route("/err")
+
 def err():
-    if not current_user.is_authenticated or user.staff == 0:
-         return redirect(url_for('user_page.main_html'))
     return render_template("utilities-404.html")
+
+@login_required
+@blueprint_utilities.route("/blank")
+def blank():
+     return render_template("utilities-blank-base.html")

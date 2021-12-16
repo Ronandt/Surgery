@@ -1,0 +1,75 @@
+{% extends "utilities-blank-base.html" %}
+{% from "./partials/FormMacros.html" import render_field %}
+ 
+{% block title %}  {% endblock %}
+{% block content %}
+<div class="container-fluid">
+<div class="bg-gradient-dark text-white " style="padding: 35px;">
+    <h1 class="h3 mb-2 " style=" color:white;">Notes</h1>
+    <p class="mb-4" ">Simply taking down notes. What else could it be?</p>
+</div>
+</div>
+<div class="container" style="min-width: 1600px;">
+  
+    <div class="row mt-4">
+      
+ 
+        {% for i in user_notes %}
+ 
+        <div class="col-4">
+            <div class="col-12 shadow p-3 mb-5 bg-white rounded">
+                <b>{{ user_notes[i].get_title() }}</b>
+                <p style="width: 400px; word-wrap: break-word;">{{ user_notes[i].get_description() }}</p>
+                <br>
+                <p class="m-0">Created On: <b>{{ user_notes[i].get_time_added() }}</b></p>
+                <p>Updated On: <b>{{ user_notes[i].get_time_updated() }}</b></p>
+ 
+ 
+                <form action="/staff/deleteNotes" class="d-inline-block" method="POST">
+                    <input type="hidden" name="uuid" value="{{ user_notes[i].get_id() }}">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+                <a class="btn btn-warning d-inline-block" href="/staff/notes/{{ user_notes[i].get_id() }}">Update</a>
+            </div>
+        </div>
+ 
+        {% endfor %}
+
+        <button type="button" class="btn btn-light shadow" data-toggle="modal" data-target="#exampleModal" style="margin-left: 10px; height: 222px;padding-right: 150px;padding-left: 150px;">
+            <img src="../static/img/add_notes.png">
+          </button>
+    </div>
+ <!-- Button trigger modal -->
+
+  
+  <!-- Modal -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Add Notes</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form method="POST">
+        <div class="modal-body">
+          
+           
+                {{ render_field(add_notes_form.title, class = "form-control") }}
+                {{ render_field(add_notes_form.description, class = "form-control")}}
+               
+            </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Add Note</button>
+        </div>
+    </form>  
+      </div>
+    </div>
+  </div>
+ 
+      </div>
+ 
+
+{% endblock %}

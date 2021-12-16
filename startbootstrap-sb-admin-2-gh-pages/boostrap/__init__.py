@@ -1,27 +1,42 @@
 from flask import *
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-
+import shelve
+from random import randint
 from os import path
 from werkzeug.security import generate_password_hash
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path="/static")
 db = SQLAlchemy()
 DB_NAME = "user.db"
+
+
 #database intialisation 
 def create_app():
+    from user_register_login import login_register
     from user_page import user_page
     from utilities import blueprint_utilities
     from models import User
-
+    from staff import staff
+    #from models import Staff
+    
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_NAME}"
     app.config['SECRET_KEY'] = "FDHIfdsfi414fhuf"
     db.init_app(app)
     create_database(app)
+
+
+
+
+
+
+
     #register blueprint
     app.register_blueprint(blueprint_utilities, url_prefix="/utilities")
     app.register_blueprint(user_page, url_prefix="/")
+    app.register_blueprint(staff, url_prefix="/staff")
+    app.register_blueprint(login_register, url_prefix = "/")
 
     with app.app_context(): #SQLAlchemy does not allow this code to run in a non-app context, hence, you have to create an environment (a function) to do so
         staff = [User(staff = 1, username = "Candice", email="staff@gmail.com", gender="F", money = 10000000000, password = generate_password_hash("bruhhh", method="sha256")), User(staff = 0, username = "Cock", email="cock@gmail.com", gender="F", money = 0,  password = generate_password_hash("bruhhh", method="sha256"))]
@@ -31,13 +46,16 @@ def create_app():
                 print("Staff Added!")
                 db.session.add(x)
                 db.session.commit()
+        #db.session.add(Staff(hacks = str(randint(1, 100000)), staff = 1, username = str(randint(1, 1000000)), email=str(randint(1, 1000000)), gender = str(randint(1, 1000000)), money = randint(1, 1000000), password = str(randint(1, 1000000))))
+        #db.session.commit()
     #login initalisation
+
     login_manager = LoginManager()
     login_manager.init_app(app)
     @login_manager.user_loader #loads the logged in user
     def load_user(id):
         return User.query.get(int(id)) #looks for the id (specific column) of the user
-    login_manager.login_view = 'user_page.user_login' #default page if the user is not logged in
+    login_manager.login_view = 'login_register.user_login' #default page if the user is not logged in
 
     return app
 

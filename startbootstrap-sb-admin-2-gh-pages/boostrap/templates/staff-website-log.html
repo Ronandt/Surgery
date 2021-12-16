@@ -10,42 +10,33 @@
 
 
                 <!-- Begin Page Content -->
-                <div class="container-fluid">
+                <div class="container-fluid" style="margin-top: 30px;">
 
                     <!-- Page Heading -->
-                    <h1 class="h3 mb-2 text-gray-800">Tables</h1>
-                    <p class="mb-4">DataTables is a third party plugin that is used to generate the demo table below.
-                        For more information about DataTables, please visit the <a target="_blank"
-                            href="https://datatables.net">official DataTables documentation</a>.</p>
-
+                    <div class="bg-gradient-info text-white shadow-lg" style="padding: 35px;">
+                    <h1 class="h3 mb-2 " style=" color:white;">Audit Log</h1>
+                    <p class="mb-4">All the actions of the website, logged.</p>
+</div>
                     <!-- DataTales Example -->
-                    <div class="card shadow mb-4">
+                    <div class="card shadow mb-4"  style="margin-top: 5px;">
                         <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+                            <h6 class="m-0 font-weight-bold text-primary">Logs</h6>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table-sm table-borderless table-bordered " id="dataTable" width="100%" cellspacing="0">
+                                <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
-                                            <th>Power</th>
-                                            <th>Name</th>
-                                            <th>Gender</th>
-                                            <th>Email</th>
-                                            <th>Balance</th>
-                                           
+                                       
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tfoot>
                                         <tr>
                                             <th>ID</th>
-                                            <th>Power</th>
-                                            <th>Name</th>
-                                            <th>Gender</th>
-                                            <th>Email</th>
-                                            <th>Balance</th>
-                                         
+                        
+                                            <th>Actions</th>
                                         </tr>
                                     </tfoot>
                                     <tbody>
@@ -57,6 +48,13 @@
                                             <td>{{x.gender}}</td>
                                             <td>{{x.email}}</td>
                                             <td>{{"$ " + '{:,}'.format(x.money)}}</td>
+            
+                                            <td><form action="{{ url_for('staff.deleteUser')}}" class="d-inline-block" method="POST">
+                                                <input type="hidden" name="id" value="{{ x.id }}">
+                                                
+                                            <button type="submit" class="btn btn-danger">Delete</button>   
+                                            </form>
+                                            </td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -66,15 +64,4 @@
                     </div>
 
                 </div>
-                <!-- /.container-fluid -->
-
-            
-            <!-- End of Main Content -->
-
-
-
-            
-
-
-
-    {% endblock %}
+{% endblock %}
