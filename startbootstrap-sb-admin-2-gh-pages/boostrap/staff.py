@@ -79,6 +79,24 @@ def deleteNotes():
             notes_database.close()        
     return redirect(url_for("staff.notes"))
 
+@staff.route("/updateNotes", methods=["GET", "POST"])
+def updateNotes():
+    update_notes_form = AddNotes(request.form)
+    if request.method == "POST":
+        notes_database = shelve.open('notes.db', 'w')
+        user_notes = {}
+        try:
+            if str(current_user.id) not in notes_database:
+                notes_database[str(current_user.id)] = user_notes
+            else:
+                user_notes = notes_database[str(current_user.id)]
+        except KeyError:
+            flash("No such note.", category="error")
+        current_note = user_notes[request.form.get('uuid')]
+        current_note.set_title(update_notes_form.title.data) 
+        current_note.set_description(update_notes_form.description.data)
+        notes_database[str(current_user.id)] = user_notes
+
 @staff.route("/sales")
 def sales():
     return render_template("staff-sales-log.html")
