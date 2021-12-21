@@ -1,7 +1,97 @@
 {% extends "utilities-blank-base.html" %}
+ {% from "./partials/FormMacros.html" import render_field %}
  
- 
-{% block title %}  {% endblock %}
+{% block title %} Manage Tickets {% endblock %}
 
 
-{% block content %} {% endblock %}
+{% block content %} 
+<div class="container-fluid" style="margin-bottom: 10px;">
+    <div class="bg-gradient-success text-white " style="padding: 35px;">
+        <h1 class="h3 mb-2 " style=" color:white;">Manage Tickets</h1>
+        <p class="mb-4" >Managing tickets. One of the most important feedbacks of all.</p>
+    </div>
+    </div>
+    <div class="container">
+{% for x in ticket_dict %}
+
+<div class="card mb-4 py-3 border-left-{{severity_dict[ticket_dict[x].get_severity()]}} border-bottom-{{status_dict[ticket_dict[x].get_status()]}}">
+    <a href="#a{{ticket_dict[x].get_id()}}" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample">
+        <h6 class="m-0 font-weight-bold text-primary">{{ticket_dict[x].get_title().upper()}} | {{ticket_dict[x].get_sender_username()}}</h6> 
+        
+        <a style="display:inline-block; margin-top: 10px; margin-bottom: 3px; max-width: 1050px; margin-left: 20px; margin-right: 20px;"class="btn btn-success d-inline-block " data-toggle="modal" data-target="#M-{{ ticket_dict[x].get_id() }}">Reply</a>
+        <form style="max-width: 1050px" method="POST" action="/staff/deleteTicket">
+          <input type="hidden" name="uuid" value="{{ticket_dict[x].get_id()}}">
+          <input type="hidden" name="user" value = "{{ticket_dict[x].get_sender_id()}}">
+        <input type="submit" value="Delete" style="display:inline-block; max-width: 1050px; width: 100%; margin-left: 20px; margin-right: 20px;" class="btn btn-danger d-inline-block" href="#">
+</form>
+    </a>
+    <div class="collapse show" id="a{{ticket_dict[x].get_id()}}">
+    <div class="card-body" style="text-align: center;">
+        <h5 style="text-align: center; position: relative; bottom: 20px; font-weight: bold; text-decoration: underline; margin-top: 30px;">Basic Information</h5>
+        <div style="display: flex; justify-content: space-around;">
+        
+        <p style="width: 150px;"><b>Issue:</b> {{ ticket_dict[x].get_issue() }}</p>
+        <p style="width: 200px;"><b>Title: </b>{{ticket_dict[x].get_title() }}</p>
+        <p style="width: 150px;"><b>Severity: </b>{{ticket_dict[x].get_severity()}} </p>
+            <p style="width: 150px;"><b>Status:</b> {{ticket_dict[x].get_status()}}</p>
+       </div>
+        <hr>
+        <h5 style="text-align: center; font-weight: bold; margin-bottom: 20px;text-decoration: underline;">Description</h5>
+        <p style="margin-bottom: 30px;">{{ticket_dict[x].get_description() }}</p>
+        <hr>
+        <h5 style="text-align: center; font-weight: bold; margin-bottom: 20px;text-decoration: underline;">Sender Information</h5>
+        <div style="display: flex; justify-content: space-around;">
+        <p style="width: 150px;"><b>Sent:</b> {{ticket_dict[x].get_time_sent()}}</p>
+        <p style="width: 150px;"><b>By:</b> {{ticket_dict[x].get_sender_username()}}</p> 
+        <p style="width: 150px;"><b>ID:</b> {{ ticket_dict[x].get_sender_id() }}</p>
+      </div>
+      {% if ticket_dict[x].get_status() == "Resolved" %}
+     
+      <div>
+      
+        <hr style="height: 2px; background-color: rgba(0, 0, 0, 0.39);">
+        <h4 style="font-weight: 700;">Staff Reply</h4>
+        <p><b>Title:</b> {{ticket_dict[x].get_reply_title()}}</p>
+        <p><b>Description:</b> {{ticket_dict[x].get_reply_description()}}</p>
+        <p><b>Staff:</b> {{ticket_dict[x].get_replied_staff()}}</p>
+        <p><b>Time Sent:</b> {{ticket_dict[x].get_reply_time_sent()}}</p>
+      </div>
+      {% endif %}
+    </div>
+
+    </div>
+
+</div>
+<div class="modal fade" id="M-{{ ticket_dict[x].get_id() }}" tabindex="-1" role="dialog" aria-labelledby="{{ ticket_dict[x].get_id() }}Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="{{ ticket_dict[x].get_id() }}Label">Reply to {{ticket_dict[x].get_sender_username()}}</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form method="POST" id="{{ ticket_dict[x].get_id() }}" action="/staff/sendTickets">
+        <div class="modal-body">
+          <input type="hidden" name="uuid" value="{{ ticket_dict[x].get_id() }}">
+            <input type="hidden" name="sender" value="{{ ticket_dict[x].get_sender_id() }}">
+          {{ render_field(reply_ticket_form.title, class="form-control" ) }}
+          {{ render_field(reply_ticket_form.description, class="form-control") }}
+                  
+               
+            </div>
+            
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Send</button>
+        </div>
+    </form>  
+      </div>
+    </div>
+  </div>
+  
+
+{% endfor %}
+
+</div>
+{% endblock %}

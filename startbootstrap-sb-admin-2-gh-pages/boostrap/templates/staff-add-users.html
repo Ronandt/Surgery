@@ -1,0 +1,48 @@
+{% extends "utilities-blank-base.html" %}
+{% from './partials/FormMacros.html' import render_field %}
+{% block title %} Add users {% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="margin-top: 30px;">
+    <div class="bg-gradient-primary text-white shadow-lg " style="padding: 35px;">
+      <h1 class="h3 mb-2 " style=" color:white;">Add Users</h1>
+      <p class="mb-4" ">Simply adding users, for whatever reason...</p>
+    </div>
+    <div class="card mx-auto shadow" style="margin-top: 5px;" >
+        <div class="card-body">
+        <h4 class="card-title mb-4">Add User</h4>
+       <form method="POST">
+           <div class="form-group">
+               <img src='' class="img-sm rounded-circle border">
+           </div>
+          <div class="form-row">
+              <div class="col form-group">
+                {{ render_field(add_user_form.username, class="form-control") }}
+              </div> <!-- form-group end.// -->
+              <div class="col form-group">
+                {{ render_field(add_user_form.email, class="form-control")}}
+              </div> <!-- form-group end.// -->
+          </div> <!-- form-row.// -->
+          <div class="form-row">
+            <div class= "form-group col-md-6">
+              {{ render_field(add_user_form.permission, class="form-control") }}
+            </div>
+              <div class="form-group col-md-6" >
+                {{ render_field(add_user_form.gender, class="form-control")}}
+              </div> <!-- form-group end.// -->
+              </div>
+          <div class="form-row">
+              <div class="form-group col-md-6">
+                {{ render_field(add_user_form.amount, class="form-control")}}
+              </div> <!-- form-group end.// -->
+              <div class="form-group col-md-6">
+                {{ render_field(add_user_form.password, class="form-control")}}
+              </div> <!-- form-group end.// -->
+          </div> <!-- form-row.// -->
+    
+          <button class="btn btn-primary btn-block">Add User</button>
+        </form>
+        </div> <!-- card-body.// -->
+      </div>
+      </div>
+{% endblock %}

@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login.utils import login_required
-from Forms import RegisterForm, LoginForm, AddFundsForm
-from models import User
+from Forms import AddFundsForm, TicketForm
+from models import Ticket
 from __init__ import db
 from werkzeug.security import generate_password_hash,  check_password_hash, gen_salt #trying to salt it later
 from flask_login import login_user, login_required, logout_user, current_user
-
+from datetime import datetime
+import shelve
 
 
 user_page = Blueprint("user_page", __name__)
@@ -17,7 +18,6 @@ def before_request():
 
 @user_page.route("/home")
 @user_page.route("/")
-
 def main_html():
     return render_template("page-index-3.html")
 
@@ -39,12 +39,50 @@ def account():
 
 @user_page.route("/feedback")
 def feedback():
-    return render_template("page-reports.html")
+    feedback_form = TicketForm(request.form)
+    return render_template("page-feedback.html", feedback_form = feedback_form)
+
+@user_page.route("/tickets", methods=["GET", "POST"])
+def tickets():
+    status_dict = {"Pending" : "warning",
+    "Resolved" : "success",
+    "Unresolved" : "secondary"}
+    ticket_form = TicketForm(request.form)
+    try:
+        ticket_dict = {}
+        current_user_dict = {}
+          
+        ticket_database = shelve.open('ticket.db', 'c')
+        if 'ticket' in ticket_database:
+            ticket_dict = ticket_database['ticket']
+        else:
+            ticket_database['ticket'] = ticket_dict
+        if str(current_user.id) in ticket_database:
+            current_user_dict = ticket_database[str(current_user.id)]
+        else:
+            ticket_database[str(current_user.id)] = current_user_dict
+    except:
+        flash("An unknown error has occurred", category='error')
+    if request.method == "POST":
+     
+            ticket = Ticket(ticket_form.description.data, ticket_form.title.data, ticket_form.issue.data, ticket_form.severity.data, current_user.id ,  current_user.username)
+            ticket_dict[ticket.get_id()] = ticket
+            current_user_dict[ticket.get_id()] = ticket
+            ticket_database['ticket'] = ticket_dict
+            ticket_database[str(current_user.id)] = current_user_dict
+           
+            
+            flash("Ticket has been sent!", category="success")
+            return redirect(url_for('user_page.tickets'))
+    current_user_dict =  ticket_dict = dict(sorted(current_user_dict.items(), key=lambda x : x[1].get_reply_time_sent(), reverse=True))
+    ticket_database.close()
+    print(current_user_dict)
+    return render_template("page-reports.html", ticket_form = ticket_form, status_dict = status_dict, current_user_dict = current_user_dict)
     
 @user_page.route("/funds", methods=["GET", "POST"])
 def funds():
     funds_form = AddFundsForm(request.form)
-    if request.method == "POST" and funds_form.validate_on_submit():
+    if request.method == "POST":
         if check_password_hash(current_user.password, funds_form.password.data):
             current_user.money += funds_form.amount.data 
             db.session.commit()

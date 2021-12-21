@@ -16,61 +16,79 @@
  
         {% for i in user_notes %}
  
-        <div class="col-sm-4" style="min-width: 200px;">
-            <div class="col-12 shadow p-3 mb-5 bg-white rounded">
+        <div class="col-sm-4" style="min-width: 200px;overflow-wrap: break-word;">
+            <div class="col-12 shadow p-3 mb-5 bg-white rounded" >
                 <b>{{ user_notes[i].get_title() }}</b>
-                <p style="width: 400px; word-wrap: break-word;">{{ user_notes[i].get_description() }}</p>
+                <p style="width: 400px; word-wrap: break-word; min-width: 100%;
+                width: 0;">{{ user_notes[i].get_description() }}</p>
                 <br>
                 <p class="m-0">Created On: <b>{{ user_notes[i].get_time_added() }}</b></p>
                 <p>Updated On: <b>{{ user_notes[i].get_time_updated() }}</b></p>
- 
- 
                 <form action="/staff/deleteNotes" class="d-inline-block" method="POST">
                     <input type="hidden" name="uuid" value="{{ user_notes[i].get_id() }}">
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>
                 
-            <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#updateNotes">
+
+
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#M-{{ user_notes[i].get_id() }}">
             Update
+          </button>
+          <button type="button" class="btn btn-info" data-toggle="modal" data-target="#M-{{ user_notes[i].get_id() }}">
+            View
           </button>
             </div>
         </div>
  
-        {% endfor %}
-<div class="col-sm-4" style="min-width: 250px;">
-        <button type="button" class="btn btn-light shadow" data-toggle="modal" data-target="#createNotes" style=" height: 222px;padding-right: 30%;padding-left: 30%;">
-            <img src="../static/img/add_notes.png">
-          </button>
-          </div>
-    </div>
- <!-- Button trigger modal -->
 
-
- <div class="modal fade" id="updateNotes" tabindex="-1" role="dialog" aria-labelledby="updateNotesLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="updateNotesLabel">Update Note</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <form method="POST" action="staff/updateNotes">
-        <div class="modal-body">
-            <!--<input type="hidden" name="uuid" value="{# user_notes[i].get_id() #}">-->
-                {{ render_field(add_notes_form.title, class = "form-control") }}
-                {{ render_field(add_notes_form.description, class = "form-control")}}
-               
+        <div class="modal fade" id="M-{{ user_notes[i].get_id() }}" tabindex="-1" role="dialog" aria-labelledby="{{ user_notes[i].get_id() }}Label" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="{{ user_notes[i].get_id() }}Label">Update Note</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <form method="POST" id="{{ user_notes[i].get_id() }}" action="/staff/updateNotes">
+              <div class="modal-body">
+                  <input type="hidden" name="uuid" value="{{ user_notes[i].get_id() }}">
+                 <label for="title">Update Title: </label><br>
+                      <input type="input" name = "title" value="{{ user_notes[i].get_title() }}" class="form-control"  >
+                    <label for="description">Update Description: </label><br>
+                      <textarea rows="5" cols="10" name="description" form="{{ user_notes[i].get_id() }}" class="form-control">{{ user_notes[i].get_description() }}</textarea>
+                        
+                     
+                  </div>
+                  
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Update Note</button>
+              </div>
+          </form>  
             </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Update Note</button>
+          </div>
         </div>
-    </form>  
+        
+      
+      
+      
+      
+        
+
+
+
+
+        {% endfor %}
+
+
+
+  <div class="col-sm-4" style="min-width: 250px;">
+    <button type="button" class="btn btn-light shadow" data-toggle="modal" data-target="#createNotes" style=" height: 222px;padding-right: 30%;padding-left: 30%;">
+        <img src="../static/img/add_notes.png">
+      </button>
       </div>
-    </div>
-  </div>
-  
+
   <!-- Modal -->
   <div class="modal fade" id="createNotes" tabindex="-1" role="dialog" aria-labelledby="createNotesLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -100,5 +118,5 @@
  
       </div>
  
-
+</div>
 {% endblock %}

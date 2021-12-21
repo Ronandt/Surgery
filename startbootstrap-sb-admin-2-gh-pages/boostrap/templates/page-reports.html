@@ -1,45 +1,73 @@
 {% extends "base.html" %}
+{% from "./partials/FormMacros.html" import render_field %}
 {% block title %} Reports {% endblock %}
 {% block content %}
+<h2 style="text-align: center; margin-top: 30px;">Tickets</h2>
 <section class="section-content padding-y">
     <!-- ============================ COMPONENT FEEDBACK  ================================= -->
         <div class="card mx-auto row" style="max-width: 800px;">
           <div class="card-body">
-          <h4 class="card-title mb-4">Feedback</h4>
-          <form>
+          <h4 class="card-title mb-4">Send A Ticket</h4>
+          <form method="POST">
             <div class="form-row">
                 <div class="col form-group">
-                    <label>Name</label>
-                      <input type="text" class="form-control" placeholder="">
+              
+                      {{ render_field(ticket_form.issue, class="form-control") }}
                 </div> <!-- form-group end.// -->
                 <div class="col form-group">
-                    <label>Email</label>
-                      <input type="email" class="form-control" placeholder="">
+                      {{ render_field(ticket_form.severity, class="form-control") }}
                 </div> <!-- form-group end.// -->
             </div> <!-- form-row.// -->
             <div class="form-group">
-                <label>What is message about?</label>
-                <select class="form-control">
-                    <option>Select</option>
-                    <option>Technical issue</option>
-                    <option>Money refund</option>
-                    <option>Recommendation</option>
-                </select>
+                {{ render_field(ticket_form.title, class="form-control") }}
             </div>
             <div class="form-group">
-                <label>What is message about?</label>
-                <textarea class="form-control" rows="3"></textarea>
+                {{ render_field(ticket_form.description, class="form-control") }}
             </div>
-            <div class="form-group">
-                <label for="exampleFormControlFile1">
-                    <input type="file" class="form-control-file">
-                </label>
-            </div>
-            <button class="btn btn-primary btn-block">Send</button>
+            <button type="submit" class="btn btn-primary btn-block">Send</button>
           </form>
           </div> <!-- card-body.// -->
         </div> <!-- card .// -->
     <!-- ============================ COMPONENT FEEDBACK END.// ================================= -->
     </section>
 
+<hr>
+<h3 style=" text-align: center; margin-bottom: 40px; margin-top: 50px;">Ticket History</h3>
+{% for x in current_user_dict %}
+
+<div class="container">
+<article class="box mb-3">
+  <div class="icontext w-100">
+
+    <div class="text">
+      <p style="text-align: center;"><b>Ticket Information</b></p>
+      <span class="date text-muted float-md-right">{{current_user_dict[x].get_time_sent()}}</span>  
+      <h6 class="mb-1">Title: {{current_user_dict[x].get_title()}}</h6>
+      <ul class="rating-stars">
+        <li style="width:80%" class="stars-active">
+          <img src="../images/icons/stars-active.svg" alt="">
+        </li>
+        <li>
+          <img src="../images/icons/starts-disable.svg" alt="">
+        </li>
+      </ul>
+      <span class="label-rating text-{{status_dict[current_user_dict[x].get_status()]}}">Status: {{current_user_dict[x].get_status()}}</span>
+    </div>
+  </div> <!-- icontext.// -->
+  <div class="mt-3">
+    <p style="word-wrap: break-word; min-width: 100%;
+    width: 0;">
+      {{ current_user_dict[x].get_description() }}
+    </p>	
+  </div>
+{% if current_user_dict[x].get_status() == "Resolved" %}
+  <hr>
+  <p style="text-align: center;"><b>Reply</b></p>
+  <span class="date text-muted float-md-right">{{current_user_dict[x].get_reply_time_sent()}}</span>  
+  <p><b>Title:</b> {{current_user_dict[x].get_reply_title().capitalize()}}</p>
+  <p><b>Description:</b> {{current_user_dict[x].get_reply_description()}}</p>
+{% endif %}
+</article>
+</div>
+{% endfor %}
   {% endblock %}      

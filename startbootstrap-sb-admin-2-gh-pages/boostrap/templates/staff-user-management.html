@@ -20,7 +20,8 @@
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4"  style="margin-top: 5px;">
                         <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Users</h6>
+                            <h6 class="m-0 font-weight-bold text-primary" style="display: inline-block">Users</h6>
+                           <a style="float: right;display:inline-block"class="btn btn-success d-inline-block" href="/staff/addUser">Add Users</a>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -63,14 +64,17 @@
                                             <button type="submit" class="btn btn-danger">Delete</button>   
 
                                             </form>
-                                            <a class="btn btn-warning d-inline-block" href="/staff/updateUser/{{x.id}}">Update</a>
+                                            <a class="btn btn-primary d-inline-block" href="/staff/updateUser/{{x.id}}">Update</a>
                                             </td>
                                         </tr>
                                         {% endfor %}
+                                        <!--<tr><td colspan="7"><a class="btn btn-success d-inline-block" href="#">Add Users</a></td></tr>-->
                                     </tbody>
+                                
                                 </table>
                             </div>
                         </div>
+
                     </div>
 
                 </div>
@@ -78,11 +82,5 @@
             
     
             <!-- End of Main Content -->
-
-
-
-            
-
-
 
     {% endblock %}

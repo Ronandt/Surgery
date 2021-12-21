@@ -1,16 +1,16 @@
 from flask import *
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-import shelve
+from flask_socketio import SocketIO
 from random import randint
-from os import path
+
 from werkzeug.security import generate_password_hash
 
 
 app = Flask(__name__, static_url_path="/static")
 db = SQLAlchemy()
 DB_NAME = "user.db"
-
+socketio = SocketIO(app)
 
 #database intialisation 
 def create_app():
@@ -23,14 +23,8 @@ def create_app():
     
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_NAME}"
     app.config['SECRET_KEY'] = "FDHIfdsfi414fhuf"
+  
     db.init_app(app)
-    create_database(app)
-
-
-
-
-
-
 
     #register blueprint
     app.register_blueprint(blueprint_utilities, url_prefix="/utilities")
@@ -38,7 +32,8 @@ def create_app():
     app.register_blueprint(staff, url_prefix="/staff")
     app.register_blueprint(login_register, url_prefix = "/")
 
-    with app.app_context(): #SQLAlchemy does not allow this code to run in a non-app context, hence, you have to create an environment (a function) to do so
+    with app.app_context():
+        db.create_all() #SQLAlchemy does not allow this code to run in a non-app context, hence, you have to create an environment (a function) to do so
         staff = [User(staff = 1, username = "Candice", email="staff@gmail.com", gender="F", money = 10000000000, password = generate_password_hash("bruhhh", method="sha256")), User(staff = 0, username = "Cock", email="cock@gmail.com", gender="F", money = 0,  password = generate_password_hash("bruhhh", method="sha256"))]
         for x in staff:
             if not User.query.filter_by(id = x.id).first() and not User.query.filter_by(email = x.email).first() and not User.query.filter_by(username = x.username).first():
@@ -66,12 +61,5 @@ def staff_html():
 @app.errorhandler(404) #404
 def page_not_found(e):
     return render_template("utilities-404.html"), 404
-
-
-
-def create_database(app):
-    if not path.exists('boostrap/' + DB_NAME):
-        db.create_all(app=app)
-        print("Database created")
 
 

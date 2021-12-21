@@ -1,7 +1,51 @@
 {% extends "utilities-blank-base.html" %}
  
  
-{% block title %}  {% endblock %}
+{% block title %} 
+
+Messages
+{% endblock %}
 
 
-{% block content %} {% endblock %}
+{% block content %}
+<div class="container-fluid" style="margin-bottom: 10px;">
+    <div class="bg-gradient-secondary text-white " style="padding: 35px;">
+        <h1 class="h3 mb-2 " style=" color:white;">Staff Chatroom</h1>
+        <p class="mb-4" >Chatting with eachother. Socialisation is crucial to the company.</p>
+    </div>
+    </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+<script type="text/javascript">
+
+
+
+
+$(document).ready(function() {
+var socket = io();
+socket.connect("http://127.0.0.1:5000/staff/messages")
+
+socket.on('connect', function(auth) {
+        $("#messages").append("<li style='list-style-type:none; font-weight: 600;'>" + "{{current_user.username}} "+ " is connected" + "</li>")
+    })
+    socket.on('message', function(msg) { //third step
+        $("#messages").append("<li style='list-style-type:none;'>" + '{{ current_user.username }}: ' + msg + "</li>")
+    })
+
+ 
+    $('#sendbutton').on('click', function() {//first step
+        socket.send($('#myMessage').val()); //send the message to the id with socket framework
+        $('#myMessage').val(''); //after sending the message, reset it using a "" value
+    })
+})
+console.log("testing")
+</script>
+
+
+<div class="container-fluid" style="background-color: white;">
+<ul id="messages">
+{% for msg in message_dict %}
+<li style="list-style-type:none;">{{ message_dict[msg].get_sender() }}: {{ message_dict[msg].get_description() }}</li>
+{% endfor %}
+</ul>
+<input type="text" id="myMessage">
+<button id="sendbutton">Send</button> </div>{% endblock %}

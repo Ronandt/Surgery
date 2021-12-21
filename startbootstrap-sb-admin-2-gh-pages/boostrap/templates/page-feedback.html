@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from './partials/FormMacros.html' import render_field %}
+{% block title %}
+Feedback
+{% endblock %}
+{% block content %}
+<h2 style="text-align: center; margin-top: 30px;">Feedback</h2>
+<section class="section-content padding-y">
+    <!-- ============================ COMPONENT FEEDBACK  ================================= -->
+        <div class="card mx-auto row" style="max-width: 800px;">
+          <div class="card-body">
+          <h4 class="card-title mb-4">Send Feedback</h4>
+          <form method="POST">
+            <div class="form-row">
+                <div class="col form-group">
+              Rating
+                      {{ render_field(feedback_form.issue, class="form-control") }}
+                </div> <!-- form-group end.// -->
+                <div class="col form-group">
+                      {{ render_field(feedback_form.severity, class="form-control") }}
+                </div> <!-- form-group end.// -->
+            </div> <!-- form-row.// -->
+            <div class="form-group">
+                {{ render_field(feedback_form.title, class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ render_field(feedback_form.description, class="form-control") }}
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Send</button>
+          </form>
+          </div> <!-- card-body.// -->
+        </div> <!-- card .// -->
+    <!-- ============================ COMPONENT FEEDBACK END.// ================================= -->
+    </section>
+{% endblock %}

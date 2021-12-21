@@ -44,7 +44,7 @@ def user_register():
         elif register_user_form.password.data != register_user_form.repeat_password.data:
             flash("Password must be equal to the confirmation", category= 'error')
         else:
-            new_user = User(staff = 0, username = register_user_form.username.data, gender = register_user_form.gender.data, email = register_user_form.email.data, password = generate_password_hash(register_user_form.password.data, method="sha256"))
+            new_user = User(staff = 0, money = 0, username = register_user_form.username.data, gender = register_user_form.gender.data, email = register_user_form.email.data, password = generate_password_hash(register_user_form.password.data, method="sha256"))
             db.session.add(new_user)
             db.session.commit()
             flash('Account created!', category='success')
