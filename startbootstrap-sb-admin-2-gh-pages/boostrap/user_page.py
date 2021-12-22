@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login.utils import login_required
-from Forms import AddFundsForm, TicketForm
+from Forms import AddFundsForm, TicketForm, FeedbackForm, UpdateUserForm
 from models import Ticket
 from __init__ import db
 from werkzeug.security import generate_password_hash,  check_password_hash, gen_salt #trying to salt it later
@@ -35,11 +35,21 @@ def cart():
 @user_page.route("/account")
 def account():
     return render_template("page-profile-main.html")
-
+ 
+@user_page.route("/editAccount")
+def editAccount():
+    update_account_form = UpdateUserForm(request.form)
+    update_account_form.username.data = current_user.username
+    update_account_form.email.data = current_user.email
+    update_account_form.gender.data = current_user.gender
+    update_account_form.password.data = current_user.password
+    return render_template("page-edit-account.html", update_account_form = update_account_form)
 
 @user_page.route("/feedback")
 def feedback():
-    feedback_form = TicketForm(request.form)
+    feedback_form = FeedbackForm(request.form)
+    if request.method == "POST":
+        pass
     return render_template("page-feedback.html", feedback_form = feedback_form)
 
 @user_page.route("/tickets", methods=["GET", "POST"])

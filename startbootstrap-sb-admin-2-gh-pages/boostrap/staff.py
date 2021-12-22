@@ -236,7 +236,8 @@ def deleteTicket():
             flash("Something unexpected has occurred", category='error')
         else:
             del ticket_dict[request.form.get('uuid')]
-            current_user_dict[request.form.get('uuid')].set_status("Unresolved")
+            if current_user_dict[request.form.get['uuid']].get_status() == "Pending":
+                current_user_dict[request.form.get('uuid')].set_status("Unresolved")
             ticket_database['ticket'] = ticket_dict
             ticket_database[request.form.get('user')] = current_user_dict
 
