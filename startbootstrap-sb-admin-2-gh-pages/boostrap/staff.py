@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user, logout_user
 from models import User, Notes, Message
 from flask_socketio import send, emit
 from __init__ import db, socketio
@@ -14,16 +14,49 @@ user = current_user
 staff = Blueprint('staff', __name__)
 
 
-@login_required
+
 @staff.before_request
 def before_request():
-    if not current_user.is_authenticated or user.staff == 0:
-        return redirect(url_for("user_page.main_html"))
+    if current_user.is_authenticated:
+        if user.staff == 0:
+            return redirect(url_for("user_page.main_html"))
+        elif user.disabled:
+            logout_user()
+    else:
+        return redirect(url_for("login_register.user_login"))
 
 @staff.route("/feedback")
 def feedback():
-    return render_template("staff-feedback.html")
+    try:
+        feedback_dict = {}
+        feedback_database = shelve.open('feedback.db', 'c')
+        if 'feedback' in feedback_database:
+            feedback_dict = feedback_database['feedback']
+        else:
+            feedback_database['feedback'] = feedback_dict
+    except:
+        flash("Something unexpected has occurred", category = "error")
+    feedback_database.close()
+    return render_template("staff-feedback.html", feedback_dict = feedback_dict)
     
+
+@staff.route("/deleteFeedback", methods=["GET", "POST"])
+def deleteFeedback():
+    if request.method == "POST":
+        try:
+            feedback_dict = {}
+            feedback_database = shelve.open('feedback.db', 'c')
+            if 'feedback' in feedback_database:
+                feedback_dict = feedback_database['feedback']
+            else:
+                feedback_database['feedback'] = feedback_dict
+        except:
+            flash("Something unexpected has occurred", category='error')
+        else:
+            del feedback_dict[request.form.get('feedback_item')]
+            feedback_database['feedback'] = feedback_dict
+            feedback_database.close()
+    return redirect(url_for('staff.feedback'))
 
 @staff.route("/home")
 def home():
@@ -31,7 +64,7 @@ def home():
 
 @staff.route("/inventory")
 def inventory():
-    return render_template('staff-inventory.html')
+    return render_template('staff-inventory-management.html')
 
 
 
@@ -61,7 +94,7 @@ def handleMessage(msg): #second step
         else:
             message_database['message'] = message_dict
     except:
-        print("What the fuck went wrong")
+        print("What went wrong")
     else:
         message_dict[message.get_id()] = message
         print(message_dict)
@@ -148,8 +181,11 @@ def sales():
 
 @staff.route("/users")
 def users():
+    status_dict = {True : "Disabled",
+    False : "Active"}
     users = User.query.all()
-    return render_template("staff-user-management.html", users = users)   
+
+    return render_template("staff-user-management.html", users = users, status_dict = status_dict)   
 
 
 @staff.route("/logs")
@@ -236,7 +272,7 @@ def deleteTicket():
             flash("Something unexpected has occurred", category='error')
         else:
             del ticket_dict[request.form.get('uuid')]
-            if current_user_dict[request.form.get['uuid']].get_status() == "Pending":
+            if current_user_dict[request.form.get('uuid')].get_status() == "Pending":
                 current_user_dict[request.form.get('uuid')].set_status("Unresolved")
             ticket_database['ticket'] = ticket_dict
             ticket_database[request.form.get('user')] = current_user_dict
@@ -269,8 +305,10 @@ def updateUser(id):
             user.username = update_user_form.username.data
             user.email = update_user_form.email.data
             user.gender = update_user_form.gender.data
-            user.password = generate_password_hash(update_user_form.password.data)
+            user.password = generate_password_hash(update_user_form.password.data, method='sha256')
             user.staff = update_user_form.permission.data
+            user.address = update_user_form.address.data
+            user.disabled = bool(int(request.form.get('options')))
             flash(f"{user.username} <ID: {user.id}> has been updated.")
             db.session.commit()
             return redirect(url_for('staff.users'))
@@ -280,6 +318,7 @@ def updateUser(id):
     update_user_form.gender.data = user.gender
     update_user_form.password.data= user.password
     update_user_form.permission.data = user.staff
+    update_user_form.address.data = user.address
     
     return render_template("staff-update-user.html", update_user_form = update_user_form, user = user)
 
@@ -293,10 +332,14 @@ def addUser():
         elif User.query.filter_by(username = add_user_form.username.data).first():
             flash("Username already exists", category='error')
         else:
-            user = User(staff = add_user_form.permission.data, username = add_user_form.username.data, email = add_user_form.email.data, gender = add_user_form.gender.data, password = add_user_form.password.data, money = add_user_form.amount.data)
+            user = User(staff = add_user_form.permission.data, username = add_user_form.username.data, email = add_user_form.email.data, gender = add_user_form.gender.data, password = add_user_form.password.data, money = add_user_form.amount.data, address = add_user_form.address.data)
             db.session.add(user)
             db.session.commit()
             flash(f"Successfully added {user.username} <ID: {user.id}>")
         return redirect(url_for('staff.users'))
     return render_template('staff-add-users.html', add_user_form = add_user_form)
     
+
+@staff.route("/suppliers", methods=["GET", "POST"])
+def suppliers():
+    return render_template("staff-suppliers.html")

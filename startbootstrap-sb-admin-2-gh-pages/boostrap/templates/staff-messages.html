@@ -25,10 +25,10 @@ var socket = io();
 socket.connect("http://127.0.0.1:5000/staff/messages")
 
 socket.on('connect', function(auth) {
-        $("#messages").append("<li style='list-style-type:none; font-weight: 600;'>" + "{{current_user.username}} "+ " is connected" + "</li>")
+        $("#messages").append("<div font-weight: 600;'>" + "{{current_user.username}} "+ " is connected" + "</div>" + "<hr>")
     })
     socket.on('message', function(msg) { //third step
-        $("#messages").append("<li style='list-style-type:none;'>" + '{{ current_user.username }}: ' + msg + "</li>")
+        $("#messages").append("<div>" + '{{ current_user.username }}: ' + msg + "</div>" + "<hr>")
     })
 
  
@@ -42,10 +42,13 @@ console.log("testing")
 
 
 <div class="container-fluid" style="background-color: white;">
-<ul id="messages">
+<div id="messages">
 {% for msg in message_dict %}
-<li style="list-style-type:none;">{{ message_dict[msg].get_sender() }}: {{ message_dict[msg].get_description() }}</li>
+<div> 
+    {{ message_dict[msg].get_sender() }}: {{ message_dict[msg].get_description() }}
+<hr>
+</div>
 {% endfor %}
-</ul>
+</div>
 <input type="text" id="myMessage">
 <button id="sendbutton">Send</button> </div>{% endblock %}

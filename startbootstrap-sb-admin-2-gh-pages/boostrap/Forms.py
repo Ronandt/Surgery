@@ -29,7 +29,7 @@ class EditUser(Form):
     gender = SelectField('Update Gender', choices=[('F', "Female"), ('M', "Male")])
     password = PasswordField('Update Password', [validators.Length(min=6, max=35), validators.DataRequired()])
     permission = IntegerField("Update Permissions: ", [validators.NumberRange(min = 0, max = 1), validators.DataRequired()])
-
+    address = StringField("Update Address: ", [validators.Length(min = 2, max = 99)])
 class AddNotes(Form):
     title = StringField("Enter title: ", [validators.Length(min=2, max=40), validators.DataRequired()])
     description = TextAreaField("Enter description: ", [validators.Length(min = 1, max= 300), validators.DataRequired()], render_kw={"rows": 5, "cols": 10})
@@ -48,6 +48,7 @@ class AddUser(Form):
     gender = SelectField('Add Gender', choices=[('F', "Female"), ('M', "Male")])
     password = PasswordField('Add Password', [validators.Length(min=6, max=35), validators.DataRequired()])
     permission = IntegerField("Add Permissions: ", [validators.NumberRange(min = 0, max = 1), validators.DataRequired()])
+    address = StringField("Update Address: ", [validators.Length(min = 2, max = 99)])
 
 class FeedbackForm(Form):
     title = StringField("Title: ", [validators.Length(min = 2, max = 30), validators.DataRequired()])
@@ -61,4 +62,5 @@ class UpdateUserForm(Form):
     username = StringField("Update Username: ", [validators.DataRequired(), validators.Length(min = 2, max = 40)])
     gender = SelectField('Update Gender', choices=[('F', "Female"), ('M', "Male")])
     password = PasswordField('Update Password', [validators.Length(min=6, max=35), validators.DataRequired()])
-    repeat_password = PasswordField('Repeat Password', [validators.Length(min=6, max=35), validators.DataRequired()])
+    repeat_password = PasswordField('Repeat Password', [validators.Length(min=6, max=35)])
+    address = StringField("Update Address: ", [validators.Length(min = 2, max = 99)])

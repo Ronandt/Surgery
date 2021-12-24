@@ -29,34 +29,41 @@
                                     <thead>
                                         <tr>
                                             <th>ID</th>
-                                            <th>Power</th>
+                                            <th>Access level</th>
                                             <th>Name</th>
                                             <th>Gender</th>
                                             <th>Email</th>
                                             <th>Balance</th>
+                                            
                                             <th>Actions</th>
+                                            <td>Status</td>
+                                          
                                         </tr>
                                     </thead>
                                     <tfoot>
                                         <tr>
                                             <th>ID</th>
-                                            <th>Power</th>
+                                            <th>Access level</th>
                                             <th>Name</th>
                                             <th>Gender</th>
                                             <th>Email</th>
                                             <th>Balance</th>
                                             <th>Actions</th>
+                                            <td>Status</td>
                                         </tr>
                                     </tfoot>
                                     <tbody>
                                         {% for x in users %}
-                                        <tr>
+                                        <tr {% if x.disabled %} style="background-color: rgb(201, 201, 201);" {% endif %}>
                                             <td>{{x.id}}</td>
                                             <td>{{x.staff}}</td>
                                             <td>{{x.username}}</td>
                                             <td>{{x.gender}}</td>
                                             <td>{{x.email}}</td>
                                             <td>{{"$ " + '{:,}'.format(x.money)}}</td>
+                                         
+                                        
+                                        
             
                                             <td><form action="{{ url_for('staff.deleteUser')}}" class="d-inline-block" method="POST">
                                                 <input type="hidden" name="id" value="{{ x.id }}">
@@ -66,6 +73,8 @@
                                             </form>
                                             <a class="btn btn-primary d-inline-block" href="/staff/updateUser/{{x.id}}">Update</a>
                                             </td>
+                                            <td>{{status_dict[x.disabled]}}</td>
+                                        
                                         </tr>
                                         {% endfor %}
                                         <!--<tr><td colspan="7"><a class="btn btn-success d-inline-block" href="#">Add Users</a></td></tr>-->

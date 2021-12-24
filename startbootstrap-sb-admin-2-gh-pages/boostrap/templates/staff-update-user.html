@@ -36,9 +36,25 @@
           <div class="form-group col-md-6">
             {{ render_field(update_user_form.password, class="form-control")}}
           </div> <!-- form-group end.// -->
+        
       </div> <!-- form-row.// -->
-
-      <button class="btn btn-primary btn-block">Save info</button>
+      <div class="form-group " style="margin-bottom: 40px;">
+        {{ render_field(update_user_form.address, class="form-control")}}
+      </div> 
+      <div class="border border-danger 600" style="text-align: center; ">
+     <h4 class="text-danger" style="margin-top: 20px;">Danger Zone (Status Of Account)</h4>                        
+        <div class="btn-group btn-group-toggle" data-toggle="buttons" style="margin-bottom: 20px;">
+        <label class="btn btn-success active">
+          <input type="radio" name="options" id="option1" autocomplete="off" value=0 {% if user.disabled == 0 %} checked=True {% endif %}> Active
+        </label>
+        <label class="btn btn-danger" >
+          <input type="radio" name="options" id="option2" autocomplete="off" value=1  {% if user.disabled == 1 %} checked=True {% endif %}> Disabled
+        </label>
+                        
+      </div>
+ 
+</div>
+      <button style="margin-top: 30px;" class="btn btn-primary btn-block">Save info</button>
     </form>
     </div> <!-- card-body.// -->
   </div>

@@ -16,7 +16,7 @@ def user_login():
     login_user_form = LoginForm(request.form)
     if request.method == "POST" and login_user_form.validate():
         user = User.query.filter_by(username = login_user_form.username.data).first()
-        if user and check_password_hash(user.password, login_user_form.password.data):
+        if user and check_password_hash(user.password, login_user_form.password.data) and user.disabled == 0:
             flash("Login Successful! Welcome!", category = "success")
             login_user(user, remember=True)
             if user.staff == 0:
@@ -25,8 +25,11 @@ def user_login():
                 return redirect(url_for('blueprint_utilities.home_index'))
             else:
                 return "how"
-        else:
+        elif not user:
             flash("Wrong credentials!", category = 'error')
+        else:
+            flash("Your account has been disabled!", category = "error")
+        
     return render_template("page-user-login.html", login_user_form = login_user_form)
 
 @login_register.route("/register", methods=['GET', 'POST'])
@@ -44,7 +47,7 @@ def user_register():
         elif register_user_form.password.data != register_user_form.repeat_password.data:
             flash("Password must be equal to the confirmation", category= 'error')
         else:
-            new_user = User(staff = 0, money = 0, username = register_user_form.username.data, gender = register_user_form.gender.data, email = register_user_form.email.data, password = generate_password_hash(register_user_form.password.data, method="sha256"))
+            new_user = User(staff = 0, money = 0, username = register_user_form.username.data, gender = register_user_form.gender.data, email = register_user_form.email.data, password = generate_password_hash(register_user_form.password.data, method="sha256"), address = "None")
             db.session.add(new_user)
             db.session.commit()
             flash('Account created!', category='success')
