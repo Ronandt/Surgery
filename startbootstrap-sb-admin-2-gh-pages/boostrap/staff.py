@@ -340,7 +340,7 @@ def addUser():
             flash("Username already exists", category='error')
         else:
             user = User(staff=add_user_form.permission.data, username=add_user_form.username.data, email=add_user_form.email.data,
-                        gender=add_user_form.gender.data, password=add_user_form.password.data, money=add_user_form.amount.data, address=add_user_form.address.data)
+                        gender=add_user_form.gender.data, password=generate_password_hash(add_user_form.password.data), money=add_user_form.amount.data, address=add_user_form.address.data)
             db.session.add(user)
             db.session.commit()
             flash(f"Successfully added {user.username} <ID: {user.id}>")
@@ -429,6 +429,7 @@ def removeSupplier():
 def mail():
     email_form = EmailForm(request.form)
     staffs = User.query.filter_by(staff=1)
+    current_user_dict = {current_user.username: "You"}
 
     try:
         mail_database = shelve.open('mail.db', 'c')
@@ -461,42 +462,83 @@ def mail():
                 f"Mail sent to {User.query.get(int(request.form.get('recipient'))).username}", category='success')
     mail_database.close()
 
-    return render_template('staff-mail.html', email_form=email_form, staffs=staffs, mail_dict_sender=mail_dict_sender)
+    return render_template('staff-mail.html', email_form=email_form, staffs=staffs, mail_dict_sender=mail_dict_sender, current_user_dict=current_user_dict)
 
 
 @staff.route("/mail/view/<string:uuid>", methods=["GET", "POST"])
 def viewMail(uuid):
+    current_user_dict = {current_user.username: "You"}
     try:
+        email_form = EmailForm(request.form)
         mail_database = shelve.open('mail.db', 'c')
         mail_dict_sender = {}
         if str(current_user.id) in mail_database:
             mail_dict_sender = mail_database[str(current_user.id)]
         else:
             mail_database[str(current_user.id)] = mail_dict_sender
+        mail = mail_dict_sender[uuid]
+    except KeyError:
+        flash(
+            f"You have deleted that ticket!", category='error')
+        return redirect(url_for('staff.mail'))
     except Exception as e:
-        flash(f"Something unexpected has occurred {e}", category='error')
-    mail = mail_dict_sender[uuid]
-    return render_template("staff-mailview.html", mail=mail)
-
-
-@staff.route("/mail/reply/<string:uuid>")
-def replyMail(uuid):
-    try:
-        mail_database = shelve.open('mail.db', 'c')
-        mail_dict_sender = {}
-        mail_dict_recipient = {}
-        if str(current_user.id) in mail_database:
-            mail_dict_sender = mail_database[str(current_user.id)]
-        else:
-            mail_database[str(current_user.id)] = mail_dict_sender
-        if request.form.get('recipient') in mail_database:
-            mail_dict_recipient = mail_database[request.form.get(
-                'recipient')]
-        else:
-            mail_database[request.form.get(
-                'recipient')] = mail_dict_recipient
-    except Exception as e:
-        flash(f"Something unexpected has occurred {e}", category='error')
+        flash(f"Something unexpected has occurred -> {e}")
     else:
-        flash("Sent!", category="success")
+        return render_template("staff-mailview.html", mail=mail, email_form=email_form, current_user_dict=current_user_dict)
+
+
+@staff.route("/mail/reply", methods=['GET', "POST"])
+def replyMail():
+
+    if request.method == 'POST':
+        email_form = EmailForm(request.form)
+        try:
+            mail_database = shelve.open('mail.db', 'c')
+            inbox_database = shelve.open('inbox.db', 'c') #for inbox
+            mail_dict_sender = {}
+            mail_dict_recipient = {}
+            if str(current_user.id) in mail_database:
+                mail_dict_sender = mail_database[str(current_user.id)]
+            else:
+                mail_database[str(current_user.id)] = mail_dict_sender
+            if request.form.get('recipient') in mail_database:
+                mail_dict_recipient = mail_database[request.form.get(
+                    'recipient')]
+            else:
+                mail_database[request.form.get(
+                    'recipient')] = mail_dict_recipient
+
+        except Exception as e:
+            flash(
+                f"Something unexpected has occurred replyMail {e}", category='error')
+        else:
+            mail_original = mail_dict_sender[request.form.get('reply_uuid')]
+            mail_reply = Mail(title=email_form.title.data, description=email_form.description.data, recipient=mail_original.get_sender(), sender=mail_original.get_recipient())
+            mail_reply.get_mail_reply().append(
+                [mail_original.get_id(), mail_original.get_title()])
+            mail_dict_sender[mail_reply.get_id()] = mail_reply
+            mail_dict_recipient[mail_reply.get_id()] = mail_reply
+            mail_database[str(current_user.id)] = mail_dict_sender
+            mail_database[request.form.get('recipient')] = mail_dict_recipient
+            flash("Sent!", category="success")
     return redirect(url_for('staff.mail'))
+
+
+@staff.route("/mail/delete", methods=["GET", "POST"])
+def deleteMail():
+    if request.method == "POST":
+        try:
+            mail_dict_user = {}
+            mail_database = shelve.open('mail.db', 'c')
+            if str(current_user.id) in mail_database:
+                mail_dict_user = mail_database[str(current_user.id)]
+            else:
+                mail_database[str(current_user.id)] = mail_dict_user
+        except Exception as e:
+            flash(f"{e}", category="error")
+        else:
+            del mail_dict_user[request.form.get('uuid')]
+            mail_database[str(current_user.id)] = mail_dict_user
+            mail_database.close()
+    return redirect(url_for("staff.mail"))
+

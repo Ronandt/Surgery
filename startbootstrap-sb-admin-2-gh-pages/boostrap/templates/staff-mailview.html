@@ -1,9 +1,10 @@
 {% extends "utilities-blank-base.html" %}
-{% block title %}View Mail {% endblock %}
+{% from "./partials/FormMacros.html" import render_field %}
+{% block title %}View Mail{% endblock %}
 {% block content %} 
-
+<p  style="margin-left: 25px;"> <a href="{{url_for('staff.mail')}}"><i class="fas fa-arrow-left"></i><span style="display: inline-block; margin-left: 5px;">Back</span></a></p>
 <div class="container">
-
+ 
     <div class="card o-hidden border-0 shadow-lg my-5">
         <div class="card-body p-0">
             <!-- Nested Row within Card Body -->
@@ -12,24 +13,30 @@
             
                     <div class="p-5">
                         <div class="text-center">
-                            <h1 class="h4 text-gray-900 mb-4">{{mail.get_title()}}</h1>
+                            <h1 class="h4 text-gray-900 mb-4">{{mail.get_title().capitalize()}}</h1>
                         </div>
                       
                         <hr>
                         <div class="text-center">
-                            <a class="small" href="#">Sender: {{mail.get_sender()[1]}}</a>
+                            <a class="small" href="#">Sender: {{current_user_dict.get(mail.get_sender()[1],mail.get_sender()[1] )}}</a>
                         </div>
                         <div class="text-center">
-                            <a class="small" href="#">Recipient: {{mail.get_recipient()[1]}}</a>
+                            <a class="small" href="#">Recipient: {{current_user_dict.get(mail.get_recipient()[1], mail.get_recipient()[1])}}</a>
                         </div>
                         <hr>
                        <p style="text-align: center;"> {{mail.get_description()}}</p>
-                       <a href="#" class="btn btn-success btn-icon-split" style="float: right;">
+                       {% if mail.get_mail_reply()[0]|length > 0 %}
+                       <hr>
+                       <p>Replied from: <a href="/staff/mail/view/{{mail.get_mail_reply()[0][0]}}">{{(mail.get_mail_reply()[0][1])}}</a></p>
+                       {% endif %}
+                       {% if mail.get_sender()[1] != current_user.username %}
+                       <a href="#" data-toggle = "modal" data-target="#replyEmail"class="btn btn-success btn-icon-split" style="float: right;">
                         <span class="icon text-success-50">
                             <i class="fas fa-arrow-right"></i>
                         </span>
                         <span class="text">Reply</span>
                     </a>
+                    {% endif %}
                     </div>
          
            
@@ -38,5 +45,37 @@
 
 
 </div>
+
+
+
+
+
+<div class="modal fade" id="replyEmail" tabindex="-1" role="dialog" aria-labelledby="replyEmailLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="replyEmailLabel">Reply to {{mail.get_sender()[1]}}</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form method="POST" action="{{url_for('staff.replyMail')}}">
+        <div class="modal-body">
+
+            {{ render_field(email_form.title, class="form-control")}}
+            {{ render_field(email_form.description, class="form-control")}}
+            <input type="hidden" name="reply_uuid" value="{{mail.get_id()}}">
+            <input type="hidden" name="recipient" value="{{mail.get_sender()[0]}}">
+            
+            </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Send</button>
+        </div>
+    </form>  
+      </div>
+    </div>
+  </div>
+ 
 {% endblock %}
 

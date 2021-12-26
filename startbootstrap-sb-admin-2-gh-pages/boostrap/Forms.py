@@ -42,12 +42,12 @@ class TicketForm(Form):
 
     
 class AddUser(Form):
-    amount = IntegerField("Add Balance: ", [validators.NumberRange(min = 0, max = 10000000)])
+    amount = IntegerField("Add Balance: ", [validators.NumberRange(min = 0, max = 10000000)], render_kw = {'value' : 0})
     email = EmailField("Add Email: ", [validators.DataRequired(), validators.Length(min=10, max=150)])
     username = StringField("Add Username: ", [validators.DataRequired(), validators.Length(min = 2, max = 40)])
     gender = SelectField('Add Gender', choices=[('F', "Female"), ('M', "Male")])
     password = PasswordField('Add Password', [validators.Length(min=6, max=35), validators.DataRequired()])
-    permission = IntegerField("Add Permissions: ", [validators.NumberRange(min = 0, max = 1), validators.DataRequired()])
+    permission = IntegerField("Add Permissions: ", [validators.NumberRange(min = 0, max = 1), validators.DataRequired()], render_kw = {'value' : 0})
     address = StringField("Update Address: ", [validators.Length(min = 2, max = 99)])
 
 class FeedbackForm(Form):

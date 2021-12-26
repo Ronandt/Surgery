@@ -18,12 +18,18 @@
     {% for x in mail_dict_sender %}
     <div class="card shadow mb-4">
       <div class="card-header py-3">
-          <h6 class="m-0 font-weight-bold text-primary">Sender: {{mail_dict_sender[x].get_sender()[1]}} | Recipient: {{mail_dict_sender[x].get_recipient()[1]}}</h6>
+          <h6 class="m-0 font-weight-bold text-primary">Sender: {{current_user_dict.get(mail_dict_sender[x].get_sender()[1],mail_dict_sender[x].get_sender()[1] )}} | Recipient: {{current_user_dict.get(mail_dict_sender[x].get_recipient()[1], mail_dict_sender[x].get_recipient()[1])}}</h6>
       </div>
       <div class="card-body">
-        {{mail_dict_sender[x].get_title()}}...
+        <b>Title:</b> {{mail_dict_sender[x].get_title().capitalize()}}...
           <hr>
           <div style="float:right;">
+            <form method="POST" action="{{url_for('staff.deleteMail')}}" style="display: inline">
+              <input type="hidden" name="uuid" value="{{mail_dict_sender[x].get_id()}}">
+            <button href="#" type="submit" class="btn btn-danger btn-circle">
+              <i class="fas fa-trash"></i>
+          </button>
+          </form>
            <a href="/staff/mail/view/{{mail_dict_sender[x].get_id()}}" class="btn btn-info btn-circle" title="View">
             <i class="fas fa-info-circle"></i>
         </a></div>
