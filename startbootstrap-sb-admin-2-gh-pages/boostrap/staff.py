@@ -433,11 +433,17 @@ def mail():
 
     try:
         mail_database = shelve.open('mail.db', 'c')
+        inbox_database = shelve.open('inbox.db', 'c') 
+        inbox_dict_send = {}
         mail_dict_sender = {}
         if str(current_user.id) in mail_database:
             mail_dict_sender = mail_database[str(current_user.id)]
         else:
             mail_database[str(current_user.id)] = mail_dict_sender
+        if str(current_user.id) in inbox_dict_send:
+            inbox_dict_send =  inbox_database[current_user.id]
+        else:
+            inbox_database[current_user.id] = inbox_dict_send
     except Exception as e:
         flash(f"Something unexpected has occurred {e}", category='error')
     if request.method == "POST":
@@ -494,7 +500,6 @@ def replyMail():
         email_form = EmailForm(request.form)
         try:
             mail_database = shelve.open('mail.db', 'c')
-            inbox_database = shelve.open('inbox.db', 'c') #for inbox
             mail_dict_sender = {}
             mail_dict_recipient = {}
             if str(current_user.id) in mail_database:
