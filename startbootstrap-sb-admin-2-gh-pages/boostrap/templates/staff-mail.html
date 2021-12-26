@@ -1,0 +1,73 @@
+{% extends "utilities-blank-base.html" %}
+{% block title %} Mail {% endblock %}
+{% from "./partials/FormMacros.html" import render_field %}
+{% block content %}
+<div class="container-fluid" style="margin-top: 30px;">
+    <div class="bg-gradient-dark text-white shadow-lg " style="padding: 35px;">
+      <h1 class="h3 mb-2 " style=" color:white;">Mail</h1>
+      <p class="mb-4" ">The messages that matters.</p>
+    </div>
+
+
+    <a href="#" data-toggle="modal" data-target="#createEmail" class="btn btn-primary btn-icon-split" style="margin-top: 20px; margin-bottom: 20px;">
+        <span class="icon text-white-50">
+            <i class="fas fa-arrow-right"></i>
+        </span>
+        <span class="text">Compose Email</span>
+    </a>
+    {% for x in mail_dict_sender %}
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Sender: {{mail_dict_sender[x].get_sender()[1]}} | Recipient: {{mail_dict_sender[x].get_recipient()[1]}}</h6>
+      </div>
+      <div class="card-body">
+        {{mail_dict_sender[x].get_title()}}...
+          <hr>
+          <div style="float:right;">
+           <a href="/staff/mail/view/{{mail_dict_sender[x].get_id()}}" class="btn btn-info btn-circle" title="View">
+            <i class="fas fa-info-circle"></i>
+        </a></div>
+      </div>
+  </div>
+  {% endfor %}
+    </div>
+
+
+
+
+
+
+    <div class="modal fade" id="createEmail" tabindex="-1" role="dialog" aria-labelledby="createEmailLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="createEmailLabel">Compose Email</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <form method="POST" action="">
+            <div class="modal-body">
+              <label for="recipient">Recipient: </label>
+              <select id="recipient" class="custom-select" name="recipient" style="margin-bottom: 10px;">
+                {% for x in staffs %}
+                {% if x.id != current_user.id %}
+                <option value="{{x.id}}">{{x.username}}</option>
+                {% endif %}
+    {% endfor %}
+              </select><br>
+                {{ render_field(email_form.title, class="form-control")}}
+                {{ render_field(email_form.description, class="form-control")}}
+                   
+                </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Send</button>
+            </div>
+        </form>  
+          </div>
+        </div>
+      </div>
+     
+
+{% endblock %}

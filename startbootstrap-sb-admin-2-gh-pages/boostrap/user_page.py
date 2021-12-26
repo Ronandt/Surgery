@@ -147,8 +147,6 @@ def tickets():
             current_user_dict[ticket.get_id()] = ticket
             ticket_database['ticket'] = ticket_dict
             ticket_database[str(current_user.id)] = current_user_dict
-           
-            
             flash("Ticket has been sent!", category="success")
             return redirect(url_for('user_page.tickets'))
     current_user_dict =  ticket_dict = dict(sorted(current_user_dict.items(), key=lambda x : x[1].get_reply_time_sent(), reverse=True))

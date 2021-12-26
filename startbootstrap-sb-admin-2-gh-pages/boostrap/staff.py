@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required, current_user, logout_user
-from models import User, Notes, Message
+from models import User, Notes, Message, Supplier, Mail
 from flask_socketio import send, emit
 from __init__ import db, socketio
-from Forms import EditUser, AddNotes, TicketForm, AddUser
+from Forms import EditUser, AddNotes, TicketForm, AddUser, AddProductForm, EmailForm,  AddSuppliersForm
 from uuid import uuid4
 import shelve
 from datetime import datetime
@@ -12,7 +12,6 @@ from werkzeug.security import generate_password_hash
 
 user = current_user
 staff = Blueprint('staff', __name__)
-
 
 
 @staff.before_request
@@ -25,6 +24,7 @@ def before_request():
     else:
         return redirect(url_for("login_register.user_login"))
 
+
 @staff.route("/feedback")
 def feedback():
     try:
@@ -35,10 +35,10 @@ def feedback():
         else:
             feedback_database['feedback'] = feedback_dict
     except:
-        flash("Something unexpected has occurred", category = "error")
+        flash("Something unexpected has occurred", category="error")
     feedback_database.close()
-    return render_template("staff-feedback.html", feedback_dict = feedback_dict)
-    
+    return render_template("staff-feedback.html", feedback_dict=feedback_dict)
+
 
 @staff.route("/deleteFeedback", methods=["GET", "POST"])
 def deleteFeedback():
@@ -58,16 +58,15 @@ def deleteFeedback():
             feedback_database.close()
     return redirect(url_for('staff.feedback'))
 
+
 @staff.route("/home")
 def home():
     return render_template("utilities-index.html")
 
+
 @staff.route("/inventory")
 def inventory():
     return render_template('staff-inventory-management.html')
-
-
-
 
 
 @staff.route("/messages")
@@ -79,18 +78,19 @@ def messages():
     else:
         message_database['message'] = message_dict
     print(message_dict)
-    return render_template("staff-messages.html", message_dict = message_dict)
+    return render_template("staff-messages.html", message_dict=message_dict)
 
-@socketio.on('message') #main event of messaging
-def handleMessage(msg): #second step
+
+@socketio.on('message')  # main event of messaging
+def handleMessage(msg):  # second step
     print("Message: " + msg)
     try:
         message_database = shelve.open('messages.db', 'c')
-        message = Message(description = msg, sender = current_user.username)
+        message = Message(description=msg, sender=current_user.username)
         message_dict = {}
         if 'message' in message_database:
             message_dict = message_database['message']
-      
+
         else:
             message_database['message'] = message_dict
     except:
@@ -101,11 +101,13 @@ def handleMessage(msg): #second step
         message_database['message'] = message_dict
         message_database.close()
 
-    send(msg, broadcast = True) #send message, broadcast is to send to everyone
+    send(msg, broadcast=True)  # send message, broadcast is to send to everyone
+
 
 @socketio.on('connect')
 def handleConnect(auth):
-    emit('responses', auth) #emit is for custom responses/events
+    emit('responses', auth)  # emit is for custom responses/events
+
 
 @staff.route("/notes", methods=["GET", "POST"])
 def notes():
@@ -120,15 +122,17 @@ def notes():
     except:
         flash("An unknown error has occurred", category="error")
     else:
-    
+
         if request.method == "POST":
-            new_note = Notes(title = add_notes_form.title.data, description = add_notes_form.description.data, time_added = datetime.now().strftime("%d/%m/%y"), time_updated = datetime.now().strftime("%d/%m/%y"))
+            new_note = Notes(title=add_notes_form.title.data, description=add_notes_form.description.data,
+                             time_added=datetime.now().strftime("%d/%m/%y"), time_updated=datetime.now().strftime("%d/%m/%y"))
             user_notes[new_note.get_id()] = new_note
             print(user_notes)
             notes_database[str(current_user.id)] = user_notes
             notes_database.close()
             return redirect(url_for("staff.notes"))
-    return render_template("staff-notes.html", add_notes_form = add_notes_form, user_notes = user_notes)
+    return render_template("staff-notes.html", add_notes_form=add_notes_form, user_notes=user_notes)
+
 
 @staff.route("/deleteNotes", methods=["GET", "POST"])
 def deleteNotes():
@@ -147,8 +151,9 @@ def deleteNotes():
             print(request.form.get('uuid'))
             del user_notes[str(request.form.get('uuid'))]
             notes_database[str(current_user.id)] = user_notes
-            notes_database.close()        
+            notes_database.close()
     return redirect(url_for("staff.notes"))
+
 
 @staff.route("/updateNotes", methods=["GET", "POST"])
 def updateNotes():
@@ -163,15 +168,13 @@ def updateNotes():
         except KeyError:
             flash("No such note.", category="error")
         current_note = user_notes[request.form.get('uuid')]
-        current_note.set_title(request.form.get('title')) 
+        current_note.set_title(request.form.get('title'))
         current_note.set_description(request.form.get('description'))
         current_note.set_time_updated(datetime.now().strftime("%d/%m/%y"))
         notes_database[str(current_user.id)] = user_notes
         notes_database.close()
-    
 
     return redirect(url_for("staff.notes"))
-
 
 
 @staff.route("/sales")
@@ -181,11 +184,11 @@ def sales():
 
 @staff.route("/users")
 def users():
-    status_dict = {True : "Disabled",
-    False : "Active"}
+    status_dict = {True: "Disabled",
+                   False: "Active"}
     users = User.query.all()
 
-    return render_template("staff-user-management.html", users = users, status_dict = status_dict)   
+    return render_template("staff-user-management.html", users=users, status_dict=status_dict)
 
 
 @staff.route("/logs")
@@ -196,10 +199,10 @@ def logs():
 @staff.route("/tickets")
 def tickets():
     reply_ticket_form = TicketForm(request.form)
-    severity_dict = {"Low" : "success",
-    "Medium" : "warning", "High" : "danger"}
-    status_dict = {"Pending" : "dark",
-    "Reviewed" : "secondary"}
+    severity_dict = {"Low": "success",
+                     "Medium": "warning", "High": "danger"}
+    status_dict = {"Pending": "dark",
+                   "Reviewed": "secondary"}
     try:
         ticket_dict = {}
         ticket_database = shelve.open('ticket.db', 'c')
@@ -207,14 +210,13 @@ def tickets():
             ticket_dict = ticket_database['ticket']
         else:
             ticket_database['ticket'] = ticket_dict
-        ticket_dict = dict(sorted(ticket_dict.items(), key=lambda x : x[1].get_status() == "Resolved" ))
+        ticket_dict = dict(
+            sorted(ticket_dict.items(), key=lambda x: x[1].get_status() == "Resolved"))
     except ValueError:
         flash("Something unexpected has happened", category='error')
     ticket_database.close()
 
-    
-    return render_template("staff-ticket.html", ticket_dict = ticket_dict, severity_dict = severity_dict , status_dict = status_dict, reply_ticket_form = reply_ticket_form)
-
+    return render_template("staff-ticket.html", ticket_dict=ticket_dict, severity_dict=severity_dict, status_dict=status_dict, reply_ticket_form=reply_ticket_form)
 
 
 @staff.route("/sendTickets", methods=["GET", "POST"])
@@ -227,30 +229,33 @@ def sendTickets():
             ticket_database = shelve.open('ticket.db', 'c')
             if 'ticket' in ticket_database:
                 ticket_dict = ticket_database['ticket']
-            else:   
+            else:
                 ticket_database['ticket'] = ticket_dict
             if str(request.form.get('sender')) in ticket_database:
-                current_user_dict = ticket_database[str(request.form.get('sender'))]
+                current_user_dict = ticket_database[str(
+                    request.form.get('sender'))]
             else:
-                ticket_database[str(request.form.get('sender'))] = current_user_dict
+                ticket_database[str(request.form.get(
+                    'sender'))] = current_user_dict
 
-    
         except:
             flash("Something unexpected has occurred", category="error")
         else:
             direct_ticket = ticket_dict[request.form.get('uuid')]
-            direct_ticket.set_reply_title(reply_ticket_form.title.data) 
-            direct_ticket.set_reply_description(reply_ticket_form.description.data)
+            direct_ticket.set_reply_title(reply_ticket_form.title.data)
+            direct_ticket.set_reply_description(
+                reply_ticket_form.description.data)
             direct_ticket.set_status("Resolved")
             direct_ticket.set_reply_time_sent()
             direct_ticket.set_replied_staff(current_user.username)
             current_user_dict[request.form.get('uuid')] = direct_ticket
             ticket_database['ticket'] = ticket_dict
-            ticket_database[str(request.form.get('sender'))] = current_user_dict
+            ticket_database[str(request.form.get('sender'))
+                            ] = current_user_dict
             flash('Ticket has been sent!', category="success")
             ticket_database.close()
     return redirect(url_for("staff.tickets"))
-    
+
 
 @staff.route("/deleteTicket", methods=["GET", "POST"])
 def deleteTicket():
@@ -267,45 +272,46 @@ def deleteTicket():
                 ticket_dict = ticket_database['ticket']
             else:
                 ticket_database['ticket'] = ticket_dict
-    
+
         except:
             flash("Something unexpected has occurred", category='error')
         else:
             del ticket_dict[request.form.get('uuid')]
             if current_user_dict[request.form.get('uuid')].get_status() == "Pending":
-                current_user_dict[request.form.get('uuid')].set_status("Unresolved")
+                current_user_dict[request.form.get(
+                    'uuid')].set_status("Unresolved")
             ticket_database['ticket'] = ticket_dict
             ticket_database[request.form.get('user')] = current_user_dict
 
-
     return redirect(url_for('staff.tickets'))
+
 
 @staff.route("/deleteUser", methods=["GET", "POST"])
 def deleteUser():
-     if request.method == "POST":
-          deletes = request.form.get("id")
-          User.query.filter_by(id = deletes).delete()
-          db.session.commit()
-          print("User Deleted")
-     return redirect(url_for("staff.users"))
-
+    if request.method == "POST":
+        deletes = request.form.get("id")
+        User.query.filter_by(id=deletes).delete()
+        db.session.commit()
+        print("User Deleted")
+    return redirect(url_for("staff.users"))
 
 
 @staff.route("/updateUser/<int:id>", methods=["GET", "POST"])
 def updateUser(id):
     update_user_form = EditUser(request.form)
-    user = User.query.filter_by(id = id).first()
+    user = User.query.filter_by(id=id).first()
     if request.method == "POST":
         user.money = update_user_form.amount.data
-        if User.query.filter_by(email = update_user_form.email.data).first() and User.query.filter_by(email = update_user_form.email.data).first().id != user.id:
-            flash("The email is not unique!", category= "error")
-        elif User.query.filter_by(username = update_user_form.username.data).first() and User.query.filter_by(username = update_user_form.username.data).first().id != user.id:
-            flash("The username is not unique!", category= "error")
+        if User.query.filter_by(email=update_user_form.email.data).first() and User.query.filter_by(email=update_user_form.email.data).first().id != user.id:
+            flash("The email is not unique!", category="error")
+        elif User.query.filter_by(username=update_user_form.username.data).first() and User.query.filter_by(username=update_user_form.username.data).first().id != user.id:
+            flash("The username is not unique!", category="error")
         else:
             user.username = update_user_form.username.data
             user.email = update_user_form.email.data
             user.gender = update_user_form.gender.data
-            user.password = generate_password_hash(update_user_form.password.data, method='sha256')
+            user.password = generate_password_hash(
+                update_user_form.password.data, method='sha256')
             user.staff = update_user_form.permission.data
             user.address = update_user_form.address.data
             user.disabled = bool(int(request.form.get('options')))
@@ -316,30 +322,181 @@ def updateUser(id):
     update_user_form.email.data = user.email
     update_user_form.username.data = user.username
     update_user_form.gender.data = user.gender
-    update_user_form.password.data= user.password
+    update_user_form.password.data = user.password
     update_user_form.permission.data = user.staff
     update_user_form.address.data = user.address
-    
-    return render_template("staff-update-user.html", update_user_form = update_user_form, user = user)
+
+    return render_template("staff-update-user.html", update_user_form=update_user_form, user=user)
+
 
 @staff.route('/addUser/', methods=['GET', 'POST'])
 def addUser():
     add_user_form = AddUser(request.form)
     if request.method == "POST":
-        if User.query.filter_by(email = add_user_form.email.data).first():
-            print(User.query.filter_by(email = add_user_form.email.data))
+        if User.query.filter_by(email=add_user_form.email.data).first():
+            print(User.query.filter_by(email=add_user_form.email.data))
             flash("Email already exists", category='error')
-        elif User.query.filter_by(username = add_user_form.username.data).first():
+        elif User.query.filter_by(username=add_user_form.username.data).first():
             flash("Username already exists", category='error')
         else:
-            user = User(staff = add_user_form.permission.data, username = add_user_form.username.data, email = add_user_form.email.data, gender = add_user_form.gender.data, password = add_user_form.password.data, money = add_user_form.amount.data, address = add_user_form.address.data)
+            user = User(staff=add_user_form.permission.data, username=add_user_form.username.data, email=add_user_form.email.data,
+                        gender=add_user_form.gender.data, password=add_user_form.password.data, money=add_user_form.amount.data, address=add_user_form.address.data)
             db.session.add(user)
             db.session.commit()
             flash(f"Successfully added {user.username} <ID: {user.id}>")
         return redirect(url_for('staff.users'))
-    return render_template('staff-add-users.html', add_user_form = add_user_form)
-    
+    return render_template('staff-add-users.html', add_user_form=add_user_form)
+
 
 @staff.route("/suppliers", methods=["GET", "POST"])
 def suppliers():
-    return render_template("staff-suppliers.html")
+    add_suppliers = AddSuppliersForm(request.form)
+    try:
+        supplier_database = shelve.open('supplier.db', 'c')
+        supplier_dict = {}
+        if 'supplier' in supplier_database:
+            supplier_dict = supplier_database['supplier']
+        else:
+            supplier_database['supplier'] = supplier_dict
+        supplier_database.close()
+    except Exception as e:
+        flash(f"Something unexpected has went wrong {e}", category='error')
+    supplier_dict = dict(reversed(supplier_dict.items()))
+    if request.method == "POST":
+        supplier = supplier_dict[request.form.get('uuid')]
+        supplier.set_status("unedited")
+        add_suppliers.suppliers_name.data = supplier.get_name()
+        add_suppliers.suppliers_description.data = supplier.get_description()
+        add_suppliers.products.data = ','.join(
+            supplier.get_product_in_charge())
+
+    return render_template("staff-suppliers.html", supplier_dict=supplier_dict, add_suppliers=add_suppliers)
+
+
+@staff.route("/addProduct", methods=["GET", "POST"])
+def addProduct():
+    add_product_form = AddProductForm(request.form)
+    return render_template("staff-addProduct.html", add_product_form=add_product_form)
+
+
+@staff.route("/addSupplier", methods=["GET", "POST"])
+def addSupplier():
+    try:
+        supplier_dict = {}
+        supplier_database = shelve.open("supplier.db", 'c')
+        if 'supplier' in supplier_database:
+            supplier_dict = supplier_database['supplier']
+        else:
+            supplier_database['supplier'] = supplier_dict
+    except Exception as e:
+        flash(f"Something went wrong {e}")
+    if request.method == "GET":
+        supplier = Supplier()
+        supplier_dict[supplier.get_id()] = supplier
+        supplier_database['supplier'] = supplier_dict
+    elif request.method == 'POST':
+        add_suppliers = AddSuppliersForm(request.form)
+        supplier = supplier_dict[request.form.get('uuid')]
+        supplier.set_status("edited")
+        supplier.set_name(add_suppliers.suppliers_name.data)
+        supplier.set_product_in_charge(
+            str(add_suppliers.products.data).replace(" ", "").split(","))
+        supplier.set_description(add_suppliers.suppliers_description.data)
+        supplier_database['supplier'] = supplier_dict
+        supplier_database.close()
+    return redirect(url_for('staff.suppliers'))
+
+
+@staff.route("/removeSupplier", methods=["GET", "POST"])
+def removeSupplier():
+    try:
+        supplier_dict = {}
+        supplier_database = shelve.open("supplier.db", 'c')
+        if 'supplier' in supplier_database:
+            supplier_dict = supplier_database['supplier']
+        else:
+            supplier_database['supplier'] = supplier_dict
+    except Exception as e:
+        flash(f"Something went wrong {e}")
+    if request.method == 'POST':
+        del supplier_dict[request.form.get('uuid')]
+    supplier_database['supplier'] = supplier_dict
+    supplier_database.close()
+    return redirect(url_for('staff.suppliers'))
+
+
+@staff.route("/mail", methods=["GET", "POST"])
+def mail():
+    email_form = EmailForm(request.form)
+    staffs = User.query.filter_by(staff=1)
+
+    try:
+        mail_database = shelve.open('mail.db', 'c')
+        mail_dict_sender = {}
+        if str(current_user.id) in mail_database:
+            mail_dict_sender = mail_database[str(current_user.id)]
+        else:
+            mail_database[str(current_user.id)] = mail_dict_sender
+    except Exception as e:
+        flash(f"Something unexpected has occurred {e}", category='error')
+    if request.method == "POST":
+        mail = Mail(email_form.title.data, email_form.description.data, [request.form.get('recipient'), User.query.get(
+            int(request.form.get('recipient'))).username], [str(current_user.id), current_user.username])
+        try:
+            mail_dict_recipient = {}
+            if request.form.get('recipient') in mail_database:
+                mail_dict_recipient = mail_database[request.form.get(
+                    'recipient')]
+            else:
+                mail_database[request.form.get(
+                    'recipient')] = mail_dict_recipient
+        except Exception as e:
+            flash(f"Something unexpected has occurred {e}", category='error')
+        else:
+            mail_dict_recipient[mail.get_id()] = mail
+            mail_dict_sender[mail.get_id()] = mail
+            mail_database[str(current_user.id)] = mail_dict_sender
+            mail_database[request.form.get('recipient')] = mail_dict_recipient
+            flash(
+                f"Mail sent to {User.query.get(int(request.form.get('recipient'))).username}", category='success')
+    mail_database.close()
+
+    return render_template('staff-mail.html', email_form=email_form, staffs=staffs, mail_dict_sender=mail_dict_sender)
+
+
+@staff.route("/mail/view/<string:uuid>", methods=["GET", "POST"])
+def viewMail(uuid):
+    try:
+        mail_database = shelve.open('mail.db', 'c')
+        mail_dict_sender = {}
+        if str(current_user.id) in mail_database:
+            mail_dict_sender = mail_database[str(current_user.id)]
+        else:
+            mail_database[str(current_user.id)] = mail_dict_sender
+    except Exception as e:
+        flash(f"Something unexpected has occurred {e}", category='error')
+    mail = mail_dict_sender[uuid]
+    return render_template("staff-mailview.html", mail=mail)
+
+
+@staff.route("/mail/reply/<string:uuid>")
+def replyMail(uuid):
+    try:
+        mail_database = shelve.open('mail.db', 'c')
+        mail_dict_sender = {}
+        mail_dict_recipient = {}
+        if str(current_user.id) in mail_database:
+            mail_dict_sender = mail_database[str(current_user.id)]
+        else:
+            mail_database[str(current_user.id)] = mail_dict_sender
+        if request.form.get('recipient') in mail_database:
+            mail_dict_recipient = mail_database[request.form.get(
+                'recipient')]
+        else:
+            mail_database[request.form.get(
+                'recipient')] = mail_dict_recipient
+    except Exception as e:
+        flash(f"Something unexpected has occurred {e}", category='error')
+    else:
+        flash("Sent!", category="success")
+    return redirect(url_for('staff.mail'))

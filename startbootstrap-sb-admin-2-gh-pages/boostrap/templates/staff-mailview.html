@@ -1,0 +1,42 @@
+{% extends "utilities-blank-base.html" %}
+{% block title %}View Mail {% endblock %}
+{% block content %} 
+
+<div class="container">
+
+    <div class="card o-hidden border-0 shadow-lg my-5">
+        <div class="card-body p-0">
+            <!-- Nested Row within Card Body -->
+           
+                
+            
+                    <div class="p-5">
+                        <div class="text-center">
+                            <h1 class="h4 text-gray-900 mb-4">{{mail.get_title()}}</h1>
+                        </div>
+                      
+                        <hr>
+                        <div class="text-center">
+                            <a class="small" href="#">Sender: {{mail.get_sender()[1]}}</a>
+                        </div>
+                        <div class="text-center">
+                            <a class="small" href="#">Recipient: {{mail.get_recipient()[1]}}</a>
+                        </div>
+                        <hr>
+                       <p style="text-align: center;"> {{mail.get_description()}}</p>
+                       <a href="#" class="btn btn-success btn-icon-split" style="float: right;">
+                        <span class="icon text-success-50">
+                            <i class="fas fa-arrow-right"></i>
+                        </span>
+                        <span class="text">Reply</span>
+                    </a>
+                    </div>
+         
+           
+        </div>
+    </div>
+
+
+</div>
+{% endblock %}
+

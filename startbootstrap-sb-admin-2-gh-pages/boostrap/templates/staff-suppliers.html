@@ -1,6 +1,78 @@
 {% extends "utilities-blank-base.html" %}
+{% from "./partials/FormMacros.html" import render_field %}
 {% block title %}Suppliers {% endblock %}
 
 {% block content %} 
-
+<div class="container-fluid">
+    <div class="bg-gradient-info text-white " style="padding: 35px;">
+        <h1 class="h3 mb-2 " style=" color:white;">Suppliers</h1>
+        <p class="mb-4" >Our suppliers. The most important people regarding our products.</p>
+    </div>
+    <a href="{{url_for("staff.addSupplier")}}" method="GET" class="btn btn-success btn-icon-split" style='margin-top: 30px;'>
+        <span class="icon text-white-50">
+            <i class="fa fas fa-plus"></i>
+        </span>
+        <span class="text">Add Suppliers</span>
+    </a>
+    {% for x in supplier_dict %}
+    {% if supplier_dict[x].get_status() == "unedited" %}
+    <div style="margin-top: 30px;">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <form method = "POST" action="{{url_for('staff.removeSupplier')}}">
+                <input type="hidden" name="uuid" value="{{supplier_dict[x].get_id()}}">
+                <button type="submit" class="btn btn-danger " style="float: right; margin-top: -10px;">Remove</button>
+                </form>
+                <form method="POST" action="{{url_for('staff.addSupplier')}}">                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            
+                            {{ render_field(add_suppliers.suppliers_name, class="form-control")}}</div>
+                        <div style="margin-top: 30px;">{{ render_field(add_suppliers.products, class="form-control")}}</div>
+                        <hr>
+                        {{ render_field(add_suppliers.suppliers_description, class="form-control")}}
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div>
+                    <input type="hidden" name='uuid' value= {{supplier_dict[x].get_id()}}>
+                    <button style="margin-top: 30px;" type="submit" class="btn btn-success btn-block">Save supplier</button>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+<div style="margin-top: 30px;">
+    <div class="card border-left-primary shadow h-100 py-2">
+        <div class="card-body">
+            <form method = "POST" action="{{url_for('staff.removeSupplier')}}">
+                <input type="hidden" name="uuid" value="{{supplier_dict[x].get_id()}}">
+                <button type="submit" class="btn btn-danger " style="float: right; margin-top: -10px;">Remove</button>
+                </form>
+                <form method = "POST" action="{{url_for('staff.suppliers')}}">
+                    <input type="hidden" name="uuid" value="{{supplier_dict[x].get_id()}}">
+                    <button  type="submit" class="btn btn-warning " style="float: right; margin-top: -10px;">Update</button>
+                    </form>
+            <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                       Supplier Name: {{supplier_dict[x].get_name()}}</div>
+                        <hr>
+                        <p>Products In Charge</p>
+                   {% for c in supplier_dict[x].get_product_in_charge() %} <div class="h5 mb-0 font-weight-bold text-gray-800" style="display: inline-block"><span style="background-color: darkgray; font-size: 17px; display: inline-block; margin: 10px; padding: 4px; border-radius: 10px;">{{c}}</span></div>{% endfor %}
+                    <hr>
+                    <p>Info</p>
+                    {{supplier_dict[x].get_description()}}
+                </div>
+                <div class="col-auto">
+                    <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+</div>
 {% endblock %}

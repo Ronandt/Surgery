@@ -15,6 +15,10 @@ Messages
     </div>
     </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+<script>$(document).ready(function() {
+$("#messages").scrollTop($("#messages")[0].scrollHeight);})
+
+</script>
 <script type="text/javascript">
 
 
@@ -29,6 +33,7 @@ socket.on('connect', function(auth) {
     })
     socket.on('message', function(msg) { //third step
         $("#messages").append("<div>" + '{{ current_user.username }}: ' + msg + "</div>" + "<hr>")
+        $("#messages").scrollTop($("#messages")[0].scrollHeight);
     })
 
  
@@ -42,7 +47,7 @@ console.log("testing")
 
 
 <div class="container-fluid" style="background-color: white;">
-<div id="messages">
+<div id="messages" style="height: 900px; overflow-x: hidden; overflow-y: auto">
 {% for msg in message_dict %}
 <div> 
     {{ message_dict[msg].get_sender() }}: {{ message_dict[msg].get_description() }}

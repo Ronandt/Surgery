@@ -64,3 +64,19 @@ class UpdateUserForm(Form):
     password = PasswordField('Update Password', [validators.Length(min=6, max=35), validators.DataRequired()])
     repeat_password = PasswordField('Repeat Password', [validators.Length(min=6, max=35)])
     address = StringField("Update Address: ", [validators.Length(min = 2, max = 99)])
+
+class AddProductForm(Form):
+    product_name = StringField("Product Name: ", [validators.DataRequired(), validators.Length(min = 2, max = 70)])
+    product_price = IntegerField("Product Price: ", [validators.DataRequired(), validators.NumberRange(min = 1, max=100000)])
+    product_description = TextAreaField("Description ", [validators.Length(min = 10, max= 1000), validators.DataRequired()], render_kw = {"rows" : 5, 'cols' : 5})
+    product_quantity = IntegerField("Product Quantity: ", [validators.DataRequired(), validators.NumberRange(min = 0, max=99999)])
+    
+class AddSuppliersForm(Form):
+    suppliers_name = StringField("Suppliers Name: ", [validators.DataRequired(), validators.Length(min = 2, max = 70)])
+    suppliers_description = TextAreaField("Suppliers Description: ", [validators.Length(min = 10, max= 1000), validators.DataRequired()], render_kw = {"rows" : 5, 'cols' : 5})
+    products = StringField("Products (Use commas to seperate products): ", [validators.DataRequired(), validators.Length(min = 2, max = 200)])
+
+class EmailForm(Form):
+       title = StringField("Title: ", [validators.Length(min = 2, max = 80), validators.DataRequired()])
+       description = TextAreaField("Description ", [validators.Length(min = 10, max= 1000), validators.DataRequired()], render_kw = {"rows" : 8, 'cols' : 8})
+       
