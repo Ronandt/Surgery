@@ -167,10 +167,6 @@ def funds():
     return render_template("page-funds.html", funds_form = funds_form)
 
 
-@user_page.route("/chatbot")
-def chatbot():
-    return render_template("page-customer-service.html")
-
 
 @user_page.route("/about_us")
 def about_us():
