@@ -19,10 +19,17 @@
     <div class="card shadow mb-4">
       <div class="card-header py-3">
           <h6 class="m-0 font-weight-bold text-primary">Sender: {{current_user_dict.get(mail_dict_sender[x].get_sender()[1],mail_dict_sender[x].get_sender()[1] )}} | Recipient: {{current_user_dict.get(mail_dict_sender[x].get_recipient()[1], mail_dict_sender[x].get_recipient()[1])}}</h6>
+          <h6 style="float: right;">{{mail_dict_sender[x].get_time_sent()}}</h6>
       </div>
       <div class="card-body">
         <b>Title:</b> {{mail_dict_sender[x].get_title().capitalize()}}...
           <hr>
+          {% if mail_dict_sender[x].get_mail_reply()[0]|length > 0 %}
+          <div style="float: left;">
+           
+            <p>Replied from: <a href="/staff/mail/view/{{mail_dict_sender[x].get_mail_reply()[0][0]}}">{{(mail_dict_sender[x].get_mail_reply()[0][1])}}</a></p>
+          </div>
+          {% endif %}
           <div style="float:right;">
             <form method="POST" action="{{url_for('staff.deleteMail')}}" style="display: inline">
               <input type="hidden" name="uuid" value="{{mail_dict_sender[x].get_id()}}">

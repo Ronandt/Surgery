@@ -433,23 +433,34 @@ def mail():
 
     try:
         mail_database = shelve.open('mail.db', 'c')
-        inbox_database = shelve.open('inbox.db', 'c') 
-        inbox_dict_send = {}
+      
         mail_dict_sender = {}
+        
         if str(current_user.id) in mail_database:
             mail_dict_sender = mail_database[str(current_user.id)]
         else:
             mail_database[str(current_user.id)] = mail_dict_sender
-        if str(current_user.id) in inbox_dict_send:
-            inbox_dict_send =  inbox_database[current_user.id]
-        else:
-            inbox_database[current_user.id] = inbox_dict_send
+        
+      
     except Exception as e:
         flash(f"Something unexpected has occurred {e}", category='error')
     if request.method == "POST":
+     
         mail = Mail(email_form.title.data, email_form.description.data, [request.form.get('recipient'), User.query.get(
             int(request.form.get('recipient'))).username], [str(current_user.id), current_user.username])
         try:
+
+            inbox_database = shelve.open('inbox.db', 'c') 
+            inbox_dict_send = []
+            inbox_dict_recipient = []
+            if str(current_user.id) in inbox_database:
+                inbox_dict_send = inbox_database[str(current_user.id)]
+            else:
+                inbox_database[str(current_user.id)] = inbox_dict_send
+            if request.form.get('recipient') in inbox_database:
+                inbox_dict_recipient = inbox_database[request.form.get('recipient')]
+            else:
+                inbox_database[request.form.get('recipient')] = inbox_dict_recipient
             mail_dict_recipient = {}
             if request.form.get('recipient') in mail_database:
                 mail_dict_recipient = mail_database[request.form.get(
@@ -460,13 +471,20 @@ def mail():
         except Exception as e:
             flash(f"Something unexpected has occurred {e}", category='error')
         else:
+            inbox_dict_send.append(mail)
+            inbox_dict_recipient.append(mail)
             mail_dict_recipient[mail.get_id()] = mail
             mail_dict_sender[mail.get_id()] = mail
             mail_database[str(current_user.id)] = mail_dict_sender
             mail_database[request.form.get('recipient')] = mail_dict_recipient
+            inbox_database[str(current_user.id)] = inbox_dict_send
+            inbox_database[request.form.get('recipient')] = inbox_dict_recipient
             flash(
                 f"Mail sent to {User.query.get(int(request.form.get('recipient'))).username}", category='success')
+            inbox_database.close()
+            return redirect(url_for('staff.mail'))
     mail_database.close()
+    mail_dict_sender = dict(sorted(mail_dict_sender.items(), key=lambda x : x[1].get_time_sent(), reverse=True))
 
     return render_template('staff-mail.html', email_form=email_form, staffs=staffs, mail_dict_sender=mail_dict_sender, current_user_dict=current_user_dict)
 
@@ -477,7 +495,13 @@ def viewMail(uuid):
     try:
         email_form = EmailForm(request.form)
         mail_database = shelve.open('mail.db', 'c')
+        inbox_database = shelve.open('inbox.db', 'c')
         mail_dict_sender = {}
+        current_inbox = []
+        if str(current_user.id) in inbox_database:
+            current_inbox = inbox_database[str(current_user.id)]
+        else:
+            inbox_database[str(current_user.id)] = current_inbox
         if str(current_user.id) in mail_database:
             mail_dict_sender = mail_database[str(current_user.id)]
         else:
@@ -485,11 +509,20 @@ def viewMail(uuid):
         mail = mail_dict_sender[uuid]
     except KeyError:
         flash(
-            f"You have deleted that ticket!", category='error')
+            f"This ticket does not exist!", category='error')
         return redirect(url_for('staff.mail'))
     except Exception as e:
         flash(f"Something unexpected has occurred -> {e}")
     else:
+        print(current_inbox)
+        print(mail)
+        for x,y in enumerate(current_inbox):
+            if mail.get_id() == y.get_id():
+                current_inbox.pop(x)
+       
+        inbox_database[str(current_user.id)] = current_inbox 
+        inbox_database.close()
+        mail_database.close()
         return render_template("staff-mailview.html", mail=mail, email_form=email_form, current_user_dict=current_user_dict)
 
 
@@ -513,6 +546,19 @@ def replyMail():
                 mail_database[request.form.get(
                     'recipient')] = mail_dict_recipient
 
+
+            inbox_database = shelve.open('inbox.db', 'c') 
+            inbox_dict_send = []
+            inbox_dict_recipient = []
+            if str(current_user.id) in inbox_database:
+                inbox_dict_send = inbox_database[str(current_user.id)]
+            else:
+                inbox_database[str(current_user.id)] = inbox_dict_send
+            if request.form.get('recipient') in inbox_database:
+                inbox_dict_recipient = inbox_database[request.form.get('recipient')]
+            else:
+                inbox_database[request.form.get('recipient')] = inbox_dict_recipient
+
         except Exception as e:
             flash(
                 f"Something unexpected has occurred replyMail {e}", category='error')
@@ -525,7 +571,15 @@ def replyMail():
             mail_dict_recipient[mail_reply.get_id()] = mail_reply
             mail_database[str(current_user.id)] = mail_dict_sender
             mail_database[request.form.get('recipient')] = mail_dict_recipient
+
+            inbox_dict_send.append(mail_reply)
+            inbox_dict_recipient.append(mail_reply)
+
+            inbox_database[request.form.get('recipient')] = inbox_dict_recipient
+            inbox_database[str(current_user.id)] = inbox_dict_send
+
             flash("Sent!", category="success")
+            
     return redirect(url_for('staff.mail'))
 
 

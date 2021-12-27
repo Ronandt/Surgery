@@ -315,10 +315,14 @@ class Mail(BaseMessage):
         self.__recipient = recipient
         self.__sender = sender
         self.__mail_reply = []
+        self.__time_sent = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
     def get_title(self):
         return self.__title
 
+    def get_time_sent(self):
+        return self.__time_sent
+        
     def get_recipient(self):
         return self.__recipient
 
@@ -339,3 +343,7 @@ class Mail(BaseMessage):
 
     def set_mail_reply(self, mail_reply):
         self.__mail_reply = mail_reply
+
+    def set_time_sent(self, time_sent
+    ):
+        self.__time_sent = time_sent

@@ -77,6 +77,6 @@ class AddSuppliersForm(Form):
     products = StringField("Products (Use commas to seperate products): ", [validators.DataRequired(), validators.Length(min = 2, max = 200)])
 
 class EmailForm(Form):
-       title = StringField("Title: ", [validators.Length(min = 2, max = 80), validators.DataRequired()])
-       description = TextAreaField("Description ", [validators.Length(min = 10, max= 1000), validators.DataRequired()], render_kw = {"rows" : 8, 'cols' : 8})
+       title = StringField("Title: ", [validators.Length(min = 2, max = 80), validators.DataRequired()], render_kw={"value" : ""})
+       description = TextAreaField("Description ", [validators.Length(min = 10, max= 1000), validators.DataRequired()], render_kw = {"rows" : 8, 'cols' : 8, "value" : ""})
        
