@@ -16,10 +16,12 @@
         <span class="text">Compose Email</span>
     </a>
     {% for x in mail_dict_sender %}
-    <div class="card shadow mb-4">
+    <div class="card shadow mb-4 {% if mail_dict_sender[x].get_id() in a  %}border-left-dark{% endif %}">
       <div class="card-header py-3">
-          <h6 class="m-0 font-weight-bold text-primary">Sender: {{current_user_dict.get(mail_dict_sender[x].get_sender()[1],mail_dict_sender[x].get_sender()[1] )}} | Recipient: {{current_user_dict.get(mail_dict_sender[x].get_recipient()[1], mail_dict_sender[x].get_recipient()[1])}}</h6>
-          <h6 style="float: right;">{{mail_dict_sender[x].get_time_sent()}}</h6>
+        <h6 style="float: right;">{{mail_dict_sender[x].get_time_sent()}}</h6>
+          <h6 class="m-0 font-weight-bold text-primary" style="margin-bottom: 20px; display: inline-block;">Sender: {{current_user_dict.get(mail_dict_sender[x].get_sender()[1],mail_dict_sender[x].get_sender()[1] )}} </h6>
+            <h6 class="m-0 font-weight-bold text-primary">Recipient: {{current_user_dict.get(mail_dict_sender[x].get_recipient()[1], mail_dict_sender[x].get_recipient()[1])}}</h6>
+          
       </div>
       <div class="card-body">
         <b>Title:</b> {{mail_dict_sender[x].get_title().capitalize()}}...

@@ -20,10 +20,10 @@
                       
                         <hr>
                         <div class="text-center">
-                            <a class="small" href="#">Sender: {{current_user_dict.get(mail.get_sender()[1],mail.get_sender()[1] )}}</a>
+                            <a class="small" style="font-size: 17px;" href="#">Sender: {{current_user_dict.get(mail.get_sender()[1],mail.get_sender()[1] )}}</a>
                         </div>
                         <div class="text-center">
-                            <a class="small" href="#">Recipient: {{current_user_dict.get(mail.get_recipient()[1], mail.get_recipient()[1])}}</a>
+                            <a class="small"style="font-size: 17px;"  href="#">Recipient: {{current_user_dict.get(mail.get_recipient()[1], mail.get_recipient()[1])}}</a>
                         </div>
                         <hr>
                        <p style="text-align: center;"> {{mail.get_description()}}</p>

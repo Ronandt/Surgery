@@ -4,9 +4,10 @@
 endblock %} {% block content %}
 <div class="container" style="min-width: 95%">
   <div class="row">
+    {% for x in product_dict %}
     <div class="col-sm-4" style="min-width: 200px; overflow-wrap: break-word">
       <div class="col-12 shadow p-3 mb-5 bg-white rounded">
-        <b>Title</b>
+        <b>{{product_dict[x].get_name().capitalize()}}</b>
         <p
           style="
             width: 400px;
@@ -16,10 +17,13 @@ endblock %} {% block content %}
             width: 0;
           "
         ></p>
+        Insert image (later feature)
         <hr />
-        <b>Extra info</b>
-        <p class="m-0">Created On: <b>a </b></p>
-        <p>Updated On: <b>a </b></p>
+        <p class="m-0"><b>Description:</b>{{product_dict[x].get_description()}}</p>
+        <b>Quantity:</b> {{product_dict[x].get_quantity()}}
+        <p><b>Price:</b> ${{product_dict[x].get_price()}}</p>
+       
+       
         <form action="/staff/deleteNotes" class="d-inline-block" method="POST">
           <input type="hidden" name="uuid" value="a" />
           <button type="submit" class="btn btn-danger">Delete</button>
@@ -35,6 +39,7 @@ endblock %} {% block content %}
         </button>
       </div>
     </div>
+    {% endfor %}
     
   <div class="col-sm-4" style="min-width: 250px;">
     <a href="{{url_for('staff.addProduct')}}">
