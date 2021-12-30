@@ -262,9 +262,13 @@ class Product(BaseMessage):
         self.__name = name
         self.__price = price
         self.__quantity = quantity
+        self.__timestamp = datetime.now().strftime("%H:%M:%S")
 
     def get_name(self):
         return self.__name
+
+    def get_timestamp(self):
+        return self.__timestamp
 
     def get_price(self):
         return self.__price
@@ -280,6 +284,12 @@ class Product(BaseMessage):
 
     def set_quantity(self, quantity):
         self.__quantity = quantity
+    
+    def set_timestamp(self, timestamp):
+        self.__timestamp = timestamp
+
+
+
 
 
 class Supplier(BaseMessage):

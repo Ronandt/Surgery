@@ -405,7 +405,7 @@ def inventory():
             product_database['products'] = product_dict
     except Exception as e:
         flash(f"Something unexpected occurred {e}", category='error')
-    return render_template('staff-inventory-management.html', product_dict = product_dict)
+    return render_template('staff-inventory-management.html', product_dict=product_dict)
 
 
 @staff.route("/addSupplier", methods=["GET", "POST"])
@@ -501,13 +501,12 @@ def mail():
         except Exception as e:
             flash(f"Something unexpected has occurred {e}", category='error')
         else:
-            inbox_dict_send.append(mail)
+
             inbox_dict_recipient.append(mail)
             mail_dict_recipient[mail.get_id()] = mail
             mail_dict_sender[mail.get_id()] = mail
             mail_database[str(current_user.id)] = mail_dict_sender
             mail_database[request.form.get('recipient')] = mail_dict_recipient
-            inbox_database[str(current_user.id)] = inbox_dict_send
             inbox_database[request.form.get(
                 'recipient')] = inbox_dict_recipient
             flash(
@@ -539,22 +538,22 @@ def viewMail(uuid):
             mail_dict_sender = mail_database[str(current_user.id)]
         else:
             mail_database[str(current_user.id)] = mail_dict_sender
+
+        for x, y in enumerate(current_inbox):
+            if uuid == y.get_id():
+                current_inbox.pop(x)
+        inbox_database[str(current_user.id)] = current_inbox
         mail = mail_dict_sender[uuid]
     except KeyError:
+
         flash(
             f"This ticket does not exist!", category='error')
         return redirect(url_for('staff.mail'))
     except Exception as e:
         flash(f"Something unexpected has occurred -> {e}")
-    else:
-        for x, y in enumerate(current_inbox):
-            if mail.get_id() == y.get_id():
-                current_inbox.pop(x)
-        inbox_database[str(current_user.id)] = current_inbox
-
-        inbox_database.close()
-        mail_database.close()
-        return render_template("staff-mailview.html", mail=mail, email_form=email_form, current_user_dict=current_user_dict)
+    inbox_database.close()
+    mail_database.close()
+    return render_template("staff-mailview.html", mail=mail, email_form=email_form, current_user_dict=current_user_dict)
 
 
 @staff.route("/mail/reply", methods=['GET', "POST"])
@@ -578,12 +577,9 @@ def replyMail():
                     'recipient')] = mail_dict_recipient
 
             inbox_database = shelve.open('inbox.db', 'c')
-            inbox_dict_send = []
+
             inbox_dict_recipient = []
-            if str(current_user.id) in inbox_database:
-                inbox_dict_send = inbox_database[str(current_user.id)]
-            else:
-                inbox_database[str(current_user.id)] = inbox_dict_send
+
             if request.form.get('recipient') in inbox_database:
                 inbox_dict_recipient = inbox_database[request.form.get(
                     'recipient')]
@@ -605,12 +601,10 @@ def replyMail():
             mail_database[str(current_user.id)] = mail_dict_sender
             mail_database[request.form.get('recipient')] = mail_dict_recipient
 
-            inbox_dict_send.append(mail_reply)
             inbox_dict_recipient.append(mail_reply)
 
             inbox_database[request.form.get(
                 'recipient')] = inbox_dict_recipient
-            inbox_database[str(current_user.id)] = inbox_dict_send
 
             flash("Sent!", category="success")
 
@@ -623,10 +617,12 @@ def deleteMail():
         try:
             mail_dict_user = {}
             mail_database = shelve.open('mail.db', 'c')
+           
             if str(current_user.id) in mail_database:
                 mail_dict_user = mail_database[str(current_user.id)]
             else:
                 mail_database[str(current_user.id)] = mail_dict_user
+
         except Exception as e:
             flash(f"{e}", category="error")
         else:
