@@ -109,7 +109,26 @@ def cart():
  
     return render_template("page-shopping-cart.html", cart_dict = cart_dict, product_dict= product_dict, total = total)
 
+@user_page.route("/cart/delete", methods=["GET","POST"])
+def remove_from_cart():
+    if request.method == "POST":
+        remove = request.form.get('uuid')
+        cart_database = shelve.open('cart.db', 'c')
+        cart_dict = cart_database[str(current_user.id)]
+        product_dict = {}
+        product_database = shelve.open('product.db', 'c')
+        product_dict = product_database["products"]
+        get_product = product_dict[remove]
+        inventory_quantity = get_product.get_quantity()
+        product_quantity = cart_dict[remove].get_quantity()
+        inventory_quantity = inventory_quantity + product_quantity
+        get_product.set_quantity(inventory_quantity)
+        product_database['products'] = product_dict
+        del cart_dict[remove]
+        cart_database[str(current_user.id)] = cart_dict
+        return redirect(url_for("user_page.cart"))
 
+        
 @user_page.route("/purchased")
 
 @user_page.route('/purchase')

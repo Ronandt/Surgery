@@ -90,7 +90,7 @@
 		<div class="widgets-wrap float-md-right">
 			<div class="widget-header  mr-3">
 				<a href={{ url_for("user_page.cart") }} class="icon icon-sm rounded-circle border"><i class="fa fa-shopping-cart"></i></a>
-				<span class="badge badge-pill badge-danger notify">0</span>
+				<span class="badge badge-pill badge-danger notify">{{cart_dict|length}}</span>
 			</div>
 			<div class="widget-header icontext">
 				<a href={{ url_for("user_page.account") }} class="icon icon-sm rounded-circle border"><i class="fa fa-user"></i></a>
