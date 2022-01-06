@@ -3,7 +3,8 @@
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#main_nav" aria-controls="main_nav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-  {% if current_user.staff == 1 and request.blueprint == "staff" %}
+ 
+  {% if current_user.staff == 1 and request.blueprint in  ["staff", "blueprint_utilities"] %}
   <li class="nav-item dropdown no-arrow mx-1" style="margin-bottom: 30px; margin-right: 100px;">
     <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <i class="fas fa-envelope fa-fw"></i>
@@ -16,6 +17,7 @@
             Message Center
         </h6>
         {% for x in range((current_user_inbox|length, 4)|min) %}
+        
         <a class="dropdown-item d-flex align-items-center" href="/staff/mail/view/{{current_user_inbox[x].get_id()}}">
             <div class="dropdown-list-image mr-3">
                 <img class="rounded-circle" src="../static/img/undraw_profile_1.svg" alt="...">

@@ -34,6 +34,7 @@ def create_app():
     app.register_blueprint(login_register, url_prefix = "/")
     
     @app.context_processor
+    
     def inbox_database():
             print(current_user)
             inbox_database = shelve.open('inbox.db', 'c')
@@ -49,6 +50,7 @@ def create_app():
                 else:
                     inbox_database['default'] = inbox_dict
             return dict(current_user_inbox = inbox_dict)
+
     @app.context_processor
     def items_in_cart():
         cart_database = shelve.open('cart.db', 'c')
@@ -66,7 +68,7 @@ def create_app():
         return dict(cart_dict=cart_dict)
 
     with app.app_context():
-        db.create_all() #SQLAlchemy does not allow this code to run in a non-app context, hence, you have to create an environment (a function) to do so
+        db.create_all() #Flask-SQLAlchemy does not allow this code to run in a non-app context, hence, you have to create an environment (a function) to do so
         staff = [User(staff = 1, username = "Candice", email="staff@gmail.com", gender="F", money = 10000000000, password = generate_password_hash("bruhhh", method="sha256"), address = "None"), User(staff = 0, username = "Cock", email="cock@gmail.com", gender="F", money = 0,  password = generate_password_hash("bruhhh", method="sha256"), address = "None")]
         for x in staff:
             if not User.query.filter_by(id = x.id).first() and not User.query.filter_by(email = x.email).first() and not User.query.filter_by(username = x.username).first():

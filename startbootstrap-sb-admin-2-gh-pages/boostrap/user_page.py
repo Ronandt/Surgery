@@ -284,3 +284,28 @@ def about_us():
 def logout():
     logout_user()
     return redirect(url_for("login_register.user_login"))
+
+'''@user_page.route('/wishlist')
+def wishlist():
+    if request.method == "POST":
+        wishlist_database = shelve.open('wishlist.db', 'c')
+        product_database = shelve.open('product.db', 'c')
+        wishlist_dict = {}
+        product_dict = {}
+        if str(current_user.id) in wishlist_database:
+            wishlist_dict = wishlist_database[str(current_user.id)]
+        else:
+            wishlist_database[str(current_user.id)] = wishlist_dict
+        if 'products' in product_database:
+            product_dict = product_database['products']
+        else:
+            product_database['products'] = product_dict
+  
+        obj = product_dict[request.form.get('wishlist')]
+        wishlist_dict[request.form.get('wishlist')] = obj
+'''
+        
+
+        
+        
+
