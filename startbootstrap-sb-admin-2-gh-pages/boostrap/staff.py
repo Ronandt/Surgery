@@ -61,7 +61,24 @@ def deleteFeedback():
 
 @staff.route("/home")
 def home():
-    return render_template("utilities-index.html")
+    product_dict = {
+    }
+    product_database = shelve.open('product.db', 'c')
+    if 'products' in product_database:
+        product_dict = product_database['products']
+    else:
+        product_database['products'] = product_dict
+    testing = sorted(list(set([__import__('math').ceil(x.get_price()/10) * 10 for x in product_dict.values()])))
+    data = [0 for _ in testing]
+   
+   
+    for x in product_dict.values():
+        
+        data[testing.index(__import__('math').ceil(x.get_price()/10) * 10)] += 1
+
+
+
+    return render_template("utilities-index.html", testing = testing, data = data, what="FDIFJFDIOFIOFJSDIOFJISOFJSIOFJSIO")
 
 
 @staff.route("/messages")

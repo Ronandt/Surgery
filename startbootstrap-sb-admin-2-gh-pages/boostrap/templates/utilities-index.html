@@ -4,6 +4,7 @@
 
 {% block content %}
 
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
 
@@ -111,7 +112,7 @@
                                 <!-- Card Header - Dropdown -->
                                 <div
                                     class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Product Prices</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -130,12 +131,41 @@
                                 <!-- Card Body -->
                                 <div class="card-body">
                                     <div class="chart-area">
-                                        <canvas id="myAreaChart"></canvas>
+                                        <canvas width="300" height="100" id="earnings"></canvas>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
+               
+<script>
+    var ctx = document.getElementById("earnings").getContext("2d");
+    var lineChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: {{testing | safe}},
+            datasets : [
+                {
+                    label: "Data points",
+                    data:  {{data | safe}},
+                    fill: false,
+                    borderColor: "rgb(75, 192, 192)",
+                    lineTension: 0.1,
+                    backgroundColor: "#4e73df"
+                }
+            ]
+        }, options: {
+            responsive: true,
+            scales : {
+                yAxes : [{
+                    display: true,
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+</script>
                         <!-- Pie Chart -->
                         <div class="col-xl-4 col-lg-5">
                             <div class="card shadow mb-4">
