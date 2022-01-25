@@ -3,7 +3,7 @@ from __init__ import db
 from flask_login import UserMixin
 from uuid import uuid4
 from datetime import datetime
-
+from flask import request
 
 class User(db.Model, UserMixin):  # UserMixin for flask login #db model for sqlalchemy
     # unique identifier that represnts the object
@@ -17,9 +17,17 @@ class User(db.Model, UserMixin):  # UserMixin for flask login #db model for sqla
     address = db.Column(db.String(100), default="None")
     disabled = db.Column(db.Boolean, default=False)
 
+
     #__mapper_args__ = {'polymorphic_identity' : 'user'}
 
+class ProductImage(db.Model):
+    true_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(150), unique=True)
+    image = db.Column(db.String(10000))
+    name = db.Column(db.String(100))
+    mimetype = db.Column(db.String(100))
 
+    
 '''class Staff(User):
     __mapper_args__ = {'polymorphic_identity' : 'staff'}
     id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key = True)
@@ -209,36 +217,26 @@ class Feedback(BaseMessage):
         self.__sender = sender
 
 
-class Log(BaseMessage):
-    def __init__(self, description, log_type, time_logged, title, action_done, user, logged_id):
+
+class BaseLog(BaseMessage):
+    def __init__(self, description, title, user):
         super().__init__(description)
-        self.__log_type = log_type
-        self.__time_logged = time_logged
+        self.__time_logged = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         self.__title = title
-        self.__action_done = action_done
         self.__user = user
-        self.__logged_id = logged_id
-
-    def get_log_type(self):
-        return self.__log_type
-
+        self.__location = request.url_rule.rule
+    
     def get_time_logged(self):
         return self.__time_logged
+    
+    def get_location(self):
+        return self.__location
 
     def get_title(self):
         return self.__title
 
-    def get_action_done(self):
-        return self.__action_done
-
     def get_user(self):
         return self.__user
-
-    def get_logged_id(self):
-        return self.__logged_id
-
-    def set_log_type(self, log_type):
-        self.__log_type = log_type
 
     def set_time_logged(self, time_logged):
         self.__time_logged = time_logged
@@ -246,14 +244,26 @@ class Log(BaseMessage):
     def set_title(self, title):
         self.__title = title
 
-    def set_action_done(self, action_done):
-        self.__action_done = action_done
-
+  
     def set_user(self, user):
         self.__user = user
+    def set_location(self, location):
+        self.__location = location
+    
+class ActionLog(BaseLog):
+    def __init__(self, description, title, user, action):
+        super().__init__(description, title, user)
+        self.__action = action
+    def get_action(self):
+        return self.__action
+    def set_action(self, action):
+        self.__action = action
+    
 
-    def set_logged_id(self, logged_id):
-        self.__logged_id = logged_id
+class SalesLog(BaseLog):
+    pass      
+
+    
 
 
 class Product(BaseMessage):

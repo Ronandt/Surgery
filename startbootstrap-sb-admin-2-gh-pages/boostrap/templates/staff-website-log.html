@@ -27,36 +27,44 @@
                                 <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
-                                            <th>ID</th>
-                                       
-                                            <th>Actions</th>
+                                            <th>Location</th>
+                                            <th>User</th>
+                                            <th>Action</th>
+                                            <th>Info</th>
+                                            <th>Time Logged</th>
+                                            <th>More Info</th>
                                         </tr>
                                     </thead>
                                     <tfoot>
                                         <tr>
-                                            <th>ID</th>
-                        
-                                            <th>Actions</th>
+                                            <th>Location</th>
+                                            <th>User</th>
+                                            <th>Action</th>
+                                            <th>Info</th>
+                                            <th>Time Logged</th>
+                                            <th>More Info</th>
                                         </tr>
                                     </tfoot>
                                     <tbody>
-                                        {% for x in users %}
+                                        {% for x in log_dict.values() %}
                                         <tr>
-                                            <td>{{x.id}}</td>
-                                            <td>{{x.staff}}</td>
-                                            <td>{{x.username}}</td>
-                                            <td>{{x.gender}}</td>
-                                            <td>{{x.email}}</td>
-                                            <td>{{"$ " + '{:,}'.format(x.money)}}</td>
+                                            <td>{{x.get_location()}}</td>
+                                            <td>{{x.get_user()}}</td>
+                                            <td>{{x.get_action()}}</td>
+                                            <td>{{x.get_title()}}</td>
+                                            <td>{{x.get_time_logged()}}</td>
+                                            
+                             
+                                          
             
-                                            <td><form action="{{ url_for('staff.deleteUser')}}" class="d-inline-block" method="POST">
+                                            <td><form action="" class="d-inline-block" method="POST">
                                                 <input type="hidden" name="id" value="{{ x.id }}">
                                                 
-                                            <button type="submit" class="btn btn-danger">Delete</button>   
+                                            <button type="submit" class="btn btn-info">More Info</button>   
                                             </form>
                                             </td>
                                         </tr>
-                                        {% endfor %}
+                                        {% endfor %}     
                                     </tbody>
                                 </table>
                             </div>

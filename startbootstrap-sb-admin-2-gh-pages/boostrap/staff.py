@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required, current_user, logout_user
-from models import User, Notes, Message, Supplier, Mail, Product
+from models import User, Notes, Message, Supplier, Mail, Product, BaseLog, ActionLog, ProductImage
 from flask_socketio import send, emit
 from __init__ import db, socketio
 from Forms import EditUser, AddNotes, TicketForm, AddUser, AddProductForm, EmailForm,  AddSuppliersForm
@@ -8,7 +8,7 @@ from uuid import uuid4
 import shelve
 from datetime import datetime
 from werkzeug.security import generate_password_hash
-
+from werkzeug.utils import secure_filename
 
 user = current_user
 staff = Blueprint('staff', __name__)
@@ -45,17 +45,32 @@ def deleteFeedback():
     if request.method == "POST":
         try:
             feedback_dict = {}
+            log_dict = {}
             feedback_database = shelve.open('feedback.db', 'c')
+            log_database = shelve.open('log.db', 'c')
             if 'feedback' in feedback_database:
                 feedback_dict = feedback_database['feedback']
             else:
                 feedback_database['feedback'] = feedback_dict
+            if 'log' in log_database:
+                log_dict = log_database['log']
+            else:
+                log_database['log'] = log_dict
+
+            
         except:
             flash("Something unexpected has occurred", category='error')
         else:
+            log = ActionLog(description=feedback_dict[request.form.get('feedback_item')], title="Staff has deleted feedback", user=current_user.username, action="Delete" )
+            log_dict[log.get_id()] = log
+
             del feedback_dict[request.form.get('feedback_item')]
+            log_database['log'] = log_dict
+
             feedback_database['feedback'] = feedback_dict
+            
             feedback_database.close()
+            log_database.close()
     return redirect(url_for('staff.feedback'))
 
 
@@ -78,7 +93,7 @@ def home():
 
 
 
-    return render_template("utilities-index.html", testing = testing, data = data, what="FDIFJFDIOFIOFJSDIOFJISOFJSIOFJSIO")
+    return render_template("utilities-index.html", testing = testing, data = data)
 
 
 @staff.route("/messages")
@@ -98,11 +113,12 @@ def handleMessage(msg):  # second step
     print("Message: " + msg)
     try:
         message_database = shelve.open('messages.db', 'c')
+       
         message = Message(description=msg, sender=current_user.username)
         message_dict = {}
+    
         if 'message' in message_database:
             message_dict = message_database['message']
-
         else:
             message_database['message'] = message_dict
     except:
@@ -111,6 +127,7 @@ def handleMessage(msg):  # second step
         message_dict[message.get_id()] = message
         print(message_dict)
         message_database['message'] = message_dict
+ 
         message_database.close()
 
     send(msg, broadcast=True)  # send message, broadcast is to send to everyone
@@ -125,24 +142,37 @@ def handleConnect(auth):
 def notes():
     add_notes_form = AddNotes(request.form)
     notes_database = shelve.open('notes.db', 'c')
+    log_database = shelve.open('log.db', 'c')
     user_notes = {}
+    log_dict = {}
     try:
         if str(current_user.id) not in notes_database:
             notes_database[str(current_user.id)] = user_notes
         else:
             user_notes = notes_database[str(current_user.id)]
+        if 'log' in log_database:
+            log_dict = log_database['log']
+        else:
+            log_database['log'] = log_dict
     except:
         flash("An unknown error has occurred", category="error")
     else:
 
-        if request.method == "POST":
+        if request.method == "POST" and add_notes_form.validate():
             new_note = Notes(title=add_notes_form.title.data, description=add_notes_form.description.data,
                              time_added=datetime.now().strftime("%d/%m/%y"), time_updated=datetime.now().strftime("%d/%m/%y"))
+            log = ActionLog(description = new_note, title="Staff has created notes", user=current_user.username, action="Add")
+            log_dict[log.get_id()] = log
             user_notes[new_note.get_id()] = new_note
             print(user_notes)
             notes_database[str(current_user.id)] = user_notes
+            log_database['log'] = log_dict
             notes_database.close()
+            log_database.close()
             return redirect(url_for("staff.notes"))
+    log_database.close()
+    notes_database.close()
+
     return render_template("staff-notes.html", add_notes_form=add_notes_form, user_notes=user_notes)
 
 
@@ -150,19 +180,33 @@ def notes():
 def deleteNotes():
     if request.method == "POST":
         notes_database = shelve.open('notes.db', 'w')
+        log_database = shelve.open('log.db', 'c')
+        log_dict = {}
         user_notes = {}
         try:
             if str(current_user.id) not in notes_database:
                 notes_database[str(current_user.id)] = user_notes
             else:
                 user_notes = notes_database[str(current_user.id)]
+            if 'log' in log_database:
+                log_dict = log_database['log']
+            else:
+                log_database['log'] = log_dict
+        
         except KeyError:
             flash("No such note.", category="error")
         else:
             print(user_notes)
+            
             print(request.form.get('uuid'))
+            log = ActionLog(description = user_notes[str(request.form.get('uuid'))], title="Staff has deleted notes", user=current_user.username, action="Delete")
             del user_notes[str(request.form.get('uuid'))]
+            log_dict[log.get_id()] = log
+            log_database['log'] = log_dict
+
+            
             notes_database[str(current_user.id)] = user_notes
+            log_database.close()
             notes_database.close()
     return redirect(url_for("staff.notes"))
 
@@ -171,20 +215,32 @@ def deleteNotes():
 def updateNotes():
     if request.method == "POST":
         notes_database = shelve.open('notes.db', 'w')
+        log_database = shelve.open('log.db', 'c')
+        log_dict ={}
         user_notes = {}
         try:
             if str(current_user.id) not in notes_database:
                 notes_database[str(current_user.id)] = user_notes
             else:
                 user_notes = notes_database[str(current_user.id)]
+            if 'log' in log_database:
+                log_dict = log_database['log']
+            else:
+                log_database['log'] = log_dict
         except KeyError:
             flash("No such note.", category="error")
         current_note = user_notes[request.form.get('uuid')]
+
         current_note.set_title(request.form.get('title'))
         current_note.set_description(request.form.get('description'))
+        log = ActionLog(description = current_note, title="Staff has updated notes", user=current_user.username, action="Update")
+        log_dict[log.get_id()] = log
+        log_database['log'] = log_dict
         current_note.set_time_updated(datetime.now().strftime("%d/%m/%y"))
+       
         notes_database[str(current_user.id)] = user_notes
         notes_database.close()
+        log_database.close()
 
     return redirect(url_for("staff.notes"))
 
@@ -205,7 +261,16 @@ def users():
 
 @staff.route("/logs")
 def logs():
-    return render_template("staff-website-log.html")
+    log_database = shelve.open('log.db', 'c')
+    log_dict = {}
+    try:
+        if 'log' in log_database:
+            log_dict = log_database['log']
+        else:
+            log_database['log'] = log_dict
+    except:
+        print("Some issue")
+    return render_template("staff-website-log.html", log_dict = log_dict)
 
 
 @staff.route("/tickets")
@@ -217,6 +282,7 @@ def tickets():
                    "Reviewed": "secondary"}
     try:
         ticket_dict = {}
+    
         ticket_database = shelve.open('ticket.db', 'c')
         if 'ticket' in ticket_database:
             ticket_dict = ticket_database['ticket']
@@ -238,7 +304,9 @@ def sendTickets():
         try:
             ticket_dict = {}
             current_user_dict = {}
+            log_dict = {}
             ticket_database = shelve.open('ticket.db', 'c')
+            log_database = shelve.open("log.db", 'c')
             if 'ticket' in ticket_database:
                 ticket_dict = ticket_database['ticket']
             else:
@@ -249,6 +317,10 @@ def sendTickets():
             else:
                 ticket_database[str(request.form.get(
                     'sender'))] = current_user_dict
+            if 'log' in log_database:
+                log_dict = log_database['log']
+            else:
+                log_database['log'] = log_dict
 
         except:
             flash("Something unexpected has occurred", category="error")
@@ -265,6 +337,10 @@ def sendTickets():
             ticket_database[str(request.form.get('sender'))
                             ] = current_user_dict
             flash('Ticket has been sent!', category="success")
+            log = ActionLog(description = direct_ticket, title="Staff has replied to a ticket", user=current_user.username, action="Send")
+            log_dict[log.get_id()] = log
+            log_database['log'] = log_dict
+            log_database.close()
             ticket_database.close()
     return redirect(url_for("staff.tickets"))
 
@@ -274,8 +350,10 @@ def deleteTicket():
     if request.method == "POST":
         ticket_dict = {}
         current_user_dict = {}
+        log_dict = {}
         try:
             ticket_database = shelve.open('ticket.db', 'c')
+            log_database = shelve.open('log.db', 'c')
             if request.form.get('user') in ticket_database:
                 current_user_dict = ticket_database[request.form.get('user')]
             else:
@@ -284,10 +362,19 @@ def deleteTicket():
                 ticket_dict = ticket_database['ticket']
             else:
                 ticket_database['ticket'] = ticket_dict
+            if 'log' in log_database:
+                log_dict = log_database['log']
+            else:
+                log_database['log'] = log_dict
 
         except:
             flash("Something unexpected has occurred", category='error')
         else:
+            log = ActionLog(description = ticket_dict[str(request.form.get('uuid'))], title="Staff has deleted tickets", user=current_user.username, action="Delete")
+            log_dict[log.get_id()] = log
+            log_database['log'] = log_dict
+            log_database.close()
+
             del ticket_dict[request.form.get('uuid')]
             if current_user_dict[request.form.get('uuid')].get_status() == "Pending":
                 current_user_dict[request.form.get(
@@ -301,10 +388,26 @@ def deleteTicket():
 @staff.route("/deleteUser", methods=["GET", "POST"])
 def deleteUser():
     if request.method == "POST":
-        deletes = request.form.get("id")
-        User.query.filter_by(id=deletes).delete()
-        db.session.commit()
-        print("User Deleted")
+        log_database = shelve.open('log.db', 'c')
+        log_dict = {}
+        try:
+            if 'log' in log_database:
+            
+                log_dict = log_database['log']
+            else:
+                log_database['log'] = log_dict
+        except:
+            flash("Something has occurred", category='error')
+        else:
+            deletes = request.form.get("id")
+            User.query.filter_by(id=deletes).delete()
+            log = ActionLog(description = deletes, title="Staff has deleted user", user=current_user.username, action="Delete")
+            log_dict[log.get_id()] = log
+            log_database['log'] = log
+            log_database.close()
+            db.session.commit()
+            
+            print("User Deleted")
     return redirect(url_for("staff.users"))
 
 
@@ -313,12 +416,25 @@ def updateUser(id):
     update_user_form = EditUser(request.form)
     user = User.query.filter_by(id=id).first()
     if request.method == "POST":
+        log_database = shelve.open('log.db', 'c')
+        log_dict = {
+        }
+
+        if 'log' in log_database:
+            log_dict = log_database['log']
+        else:
+            log_database['log'] = log_dict
         user.money = update_user_form.amount.data
         if User.query.filter_by(email=update_user_form.email.data).first() and User.query.filter_by(email=update_user_form.email.data).first().id != user.id:
             flash("The email is not unique!", category="error")
         elif User.query.filter_by(username=update_user_form.username.data).first() and User.query.filter_by(username=update_user_form.username.data).first().id != user.id:
             flash("The username is not unique!", category="error")
         else:
+            log = ActionLog(description = user.id, title="Staff has updated a user", user=current_user.username, action="Update")
+            log_dict[log.get_id()] = log
+            log_database['log'] = log_dict
+            log_database.close()
+
             user.username = update_user_form.username.data
             user.email = update_user_form.email.data
             user.gender = update_user_form.gender.data
@@ -327,6 +443,8 @@ def updateUser(id):
             user.staff = update_user_form.permission.data
             user.address = update_user_form.address.data
             user.disabled = bool(int(request.form.get('options')))
+
+
             flash(f"{user.username} <ID: {user.id}> has been updated.")
             db.session.commit()
             return redirect(url_for('staff.users'))
@@ -345,6 +463,15 @@ def updateUser(id):
 def addUser():
     add_user_form = AddUser(request.form)
     if request.method == "POST":
+        try:
+            log_database = shelve.open('log.db', 'c')
+            log_dict = {}
+            if 'log' in log_database:
+                log_dict = log_database['log']
+            else:
+                log_database['log'] = log_dict
+        except:
+            flash("Something unedxpected has occurred", category='error')
         if User.query.filter_by(email=add_user_form.email.data).first():
             print(User.query.filter_by(email=add_user_form.email.data))
             flash("Email already exists", category='error')
@@ -352,7 +479,12 @@ def addUser():
             flash("Username already exists", category='error')
         else:
             user = User(staff=add_user_form.permission.data, username=add_user_form.username.data, email=add_user_form.email.data,
+             
                         gender=add_user_form.gender.data, password=generate_password_hash(add_user_form.password.data), money=add_user_form.amount.data, address=add_user_form.address.data)
+            log = ActionLog(description = user, title="Staff has added user", user=current_user.username, action="Add")
+            log_dict[log.get_id()] = log
+            log_database['log'] = log_dict
+            log_database.close()
             db.session.add(user)
             db.session.commit()
             flash(f"Successfully added {user.username} <ID: {user.id}>")
@@ -364,24 +496,28 @@ def addUser():
 def suppliers():
     add_suppliers = AddSuppliersForm(request.form)
     try:
+
         supplier_database = shelve.open('supplier.db', 'c')
         supplier_dict = {}
         if 'supplier' in supplier_database:
             supplier_dict = supplier_database['supplier']
         else:
             supplier_database['supplier'] = supplier_dict
+     
         supplier_database.close()
     except Exception as e:
         flash(f"Something unexpected has went wrong {e}", category='error')
     supplier_dict = dict(reversed(supplier_dict.items()))
     if request.method == "POST":
+
+        
         supplier = supplier_dict[request.form.get('uuid')]
         supplier.set_status("unedited")
         add_suppliers.suppliers_name.data = supplier.get_name()
         add_suppliers.suppliers_description.data = supplier.get_description()
         add_suppliers.products.data = ','.join(
             supplier.get_product_in_charge())
-
+        
     return render_template("staff-suppliers.html", supplier_dict=supplier_dict, add_suppliers=add_suppliers)
 
 
@@ -396,11 +532,35 @@ def addProduct():
             product_dict = product_database['products']
         else:
             product_database['products'] = product_dict
+        
     except Exception as e:
         flash(f"Something unexpected occurred {e}", category='error')
     if request.method == "POST":
+        log_database = shelve.open('log.db', 'c')
+        log_dict = {}
+        if 'log' in log_database:
+            log_dict = log_database['log']
+        else:
+            log_database['log'] = log_dict
+ 
+        
+        
         product = Product(name=add_product_form.product_name.data, description=add_product_form.product_description.data,
                           price=add_product_form.product_price.data, quantity=add_product_form.product_quantity.data)
+        image = request.files['image']
+        if not image:
+            flash("No picture is uploaded")
+        else:
+            filename = secure_filename(image.filename)
+            mimetype = image.mimetype
+            img = ProductImage(id = product.get_id(), image = image.read(), mimetype = mimetype, name = filename)
+            db.session.add(img)
+            db.session.commit()
+
+        log = ActionLog(description = product, title="Staff has added a product", user=current_user.username, action="Add")
+        log_dict[log.get_id()] = log
+        log_database['log'] = log_dict
+        log_database.close()
         product_dict[product.get_id()] = product
         product_database['products'] = product_dict
         flash("Product added!", category="success")
@@ -430,10 +590,12 @@ def addSupplier():
     try:
         supplier_dict = {}
         supplier_database = shelve.open("supplier.db", 'c')
+        
         if 'supplier' in supplier_database:
             supplier_dict = supplier_database['supplier']
         else:
             supplier_database['supplier'] = supplier_dict
+    
     except Exception as e:
         flash(f"Something went wrong {e}")
     if request.method == "GET":
@@ -441,6 +603,13 @@ def addSupplier():
         supplier_dict[supplier.get_id()] = supplier
         supplier_database['supplier'] = supplier_dict
     elif request.method == 'POST':
+        log_database = shelve.open('log.db', 'c')
+        log_dict = {}
+        if 'log' in log_database:
+            log_dict = log_database['log']
+        else:
+            log_database['log'] = log_dict
+    
         add_suppliers = AddSuppliersForm(request.form)
         supplier = supplier_dict[request.form.get('uuid')]
         supplier.set_status("edited")
@@ -448,6 +617,10 @@ def addSupplier():
         supplier.set_product_in_charge(
             str(add_suppliers.products.data).replace(" ", "").split(","))
         supplier.set_description(add_suppliers.suppliers_description.data)
+        log = ActionLog(description = supplier, title="Staff has added a product", user=current_user.username, action="Add")
+        log_dict[log.get_id()] = log
+        log_database['log'] = log_dict
+        log_database.close()
         supplier_database['supplier'] = supplier_dict
         supplier_database.close()
     return redirect(url_for('staff.suppliers'))
@@ -457,6 +630,7 @@ def addSupplier():
 def removeSupplier():
     try:
         supplier_dict = {}
+        
         supplier_database = shelve.open("supplier.db", 'c')
         if 'supplier' in supplier_database:
             supplier_dict = supplier_database['supplier']
