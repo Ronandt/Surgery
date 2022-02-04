@@ -21,6 +21,9 @@ def create_app():
     from models import User
     from staff import staff
     import shelve
+    import base64
+    from jinja2 import environment
+
     
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_NAME}"
     app.config['SECRET_KEY'] = "FDHIfdsfi414fhuf"
@@ -66,6 +69,7 @@ def create_app():
             else:
                 cart_database['default'] = cart_dict
         return dict(cart_dict=cart_dict)
+ 
 
     with app.app_context():
         db.create_all() #Flask-SQLAlchemy does not allow this code to run in a non-app context, hence, you have to create an environment (a function) to do so

@@ -1,6 +1,7 @@
+from tkinter import PhotoImage
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required, current_user, logout_user
-from models import User, Notes, Message, Supplier, Mail, Product, BaseLog, ActionLog, ProductImage
+from models import User, Notes, Message, Supplier, Mail, Product, BaseLog, ActionLog
 from flask_socketio import send, emit
 from __init__ import db, socketio
 from Forms import EditUser, AddNotes, TicketForm, AddUser, AddProductForm, EmailForm,  AddSuppliersForm
@@ -9,6 +10,7 @@ import shelve
 from datetime import datetime
 from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
+import base64
 
 user = current_user
 staff = Blueprint('staff', __name__)
@@ -551,11 +553,8 @@ def addProduct():
         if not image:
             flash("No picture is uploaded")
         else:
-            filename = secure_filename(image.filename)
-            mimetype = image.mimetype
-            img = ProductImage(id = product.get_id(), image = image.read(), mimetype = mimetype, name = filename)
-            db.session.add(img)
-            db.session.commit()
+            string = base64.b64encode(image.read())
+            product.set_image(string)
 
         log = ActionLog(description = product, title="Staff has added a product", user=current_user.username, action="Add")
         log_dict[log.get_id()] = log
@@ -580,9 +579,66 @@ def inventory():
             product_dict = product_database['products']
         else:
             product_database['products'] = product_dict
+      
     except Exception as e:
         flash(f"Something unexpected occurred {e}", category='error')
     return render_template('staff-inventory-management.html', product_dict=product_dict)
+
+
+@staff.route("/deleteProduct", methods=["GET", "POST"])
+def deleteProduct():
+    if request.method == "POST":
+        try:
+            product_dict = {}
+            product_database = shelve.open('product.db', 'c')
+
+            if 'products' in product_database:
+                product_dict = product_database['products']
+            else:
+                product_database['products'] = product_dict
+
+        except Exception as e:
+            flash(f"{e}", category="error")
+        else:
+            del product_dict[request.form.get('uuid')]
+            product_database['products'] = product_dict
+            product_database.close()
+    return redirect(url_for("staff.inventory"))
+
+@staff.route("/updateProduct/<string:id>", methods=["GET", "POST"])
+def updateProduct(id):
+    update_product_form = AddProductForm(request.form)
+    if request.method == 'POST' and update_product_form.validate():
+        product_dict = {}
+        product_database = shelve.open('product.db', 'c')
+        product_dict = product_database['products']
+
+        product = product_dict.get(id)
+        product.set_name(update_product_form.product_name.data)
+        product.set_price(update_product_form.product_price.data)
+        product.set_quantity(update_product_form.product_quantity.data)
+        product.set_description(update_product_form.product_description.data)
+
+        product_database['products'] = product_dict
+        product_database.close()
+
+        return redirect(url_for('staff.inventory'))
+    else:
+        product_dict = {}
+        product_database = shelve.open('product.db', 'c')
+        if 'products' in product_database:
+            product_dict = product_database['products']
+        else:
+            product_database['products'] = product_dict
+        product_database.close()
+
+        product = product_dict[id]
+        update_product_form.product_name.data = product.get_name()
+        update_product_form.product_price.data = product.get_price()
+        update_product_form.product_quantity.data = product.get_quantity()
+        update_product_form.product_description.data = product.get_description()
+
+    return render_template('staff-updateProduct.html', update_product_form=update_product_form, product_dict=product_dict, id=id)
 
 
 @staff.route("/addSupplier", methods=["GET", "POST"])

@@ -3,6 +3,7 @@ from __init__ import db
 from flask_login import UserMixin
 from uuid import uuid4
 from datetime import datetime
+
 from flask import request
 
 class User(db.Model, UserMixin):  # UserMixin for flask login #db model for sqlalchemy
@@ -20,13 +21,8 @@ class User(db.Model, UserMixin):  # UserMixin for flask login #db model for sqla
 
     #__mapper_args__ = {'polymorphic_identity' : 'user'}
 
-class ProductImage(db.Model):
-    true_id = db.Column(db.Integer, primary_key=True)
-    id = db.Column(db.String(150), unique=True)
-    image = db.Column(db.String(10000))
-    name = db.Column(db.String(100))
-    mimetype = db.Column(db.String(100))
 
+   
     
 '''class Staff(User):
     __mapper_args__ = {'polymorphic_identity' : 'staff'}
@@ -273,6 +269,7 @@ class Product(BaseMessage):
         self.__price = price
         self.__quantity = quantity
         self.__timestamp = datetime.now().strftime("%H:%M:%S")
+        self.__image = None
 
     def get_name(self):
         return self.__name
@@ -297,6 +294,13 @@ class Product(BaseMessage):
     
     def set_timestamp(self, timestamp):
         self.__timestamp = timestamp
+    
+    def set_image(self, image):
+        self.__image = image
+    
+    def get_image(self):
+
+        return self.__image.decode("utf-8") if self.__image != None else "No image"
 
 
 

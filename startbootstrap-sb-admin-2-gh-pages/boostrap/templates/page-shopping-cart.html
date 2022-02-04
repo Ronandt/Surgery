@@ -49,11 +49,10 @@
 		</div> <!-- price-wrap .// -->
 	</td>
 	<td class="text-right"> 
-		<!--<form method="POST" action="{# url_for('user_page.wishlist') #}">
+		<form method="POST" action="{{ url_for('user_page.wishlist') }}">    <!-- Copy from here -->
 			<input type="hidden" name="wishlist" value="{{ x }}">
 		<button type='submit' data-original-title="Save to Wishlist" title="" href="" class="btn btn-light" data-toggle="tooltip"> <i class="fa fa-heart"></i></input> 
-		</form>-->
-		<a data-original-title="Save to Wishlist" title="" href="" class="btn btn-light" data-toggle="tooltip"> <i class="fa fa-heart"></i></a>
+		</form> <!-- Copy to here-->
 
 		<form action="{{url_for('user_page.remove_from_cart')}}" class="d-inline-block" method="POST">
 			  <input type="hidden" name="uuid" value="{{ x }}" />

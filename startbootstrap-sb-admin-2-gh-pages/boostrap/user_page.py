@@ -93,7 +93,16 @@ def cart():
         else:
             all_orders_database[str(current_user.id)] = all_orders
         all_orders = {**all_orders, **cart_dict}
+        for remove in cart_dict:
+            product_dict = product_database["products"]
+            get_product = product_dict[remove]
+            inventory_quantity = get_product.get_quantity()
+            product_quantity = cart_dict[remove].get_quantity()
+            inventory_quantity = inventory_quantity - product_quantity
+            get_product.set_quantity(inventory_quantity)
+        product_database['products'] = product_dict
         cart_dict.clear()
+        
         all_orders_database[str(current_user.id)] = all_orders
         cart_database[str(current_user.id)] = cart_dict
         all_orders_database.close()
@@ -114,6 +123,18 @@ def remove_from_cart():
     if request.method == "POST":
         remove = request.form.get('uuid')
         cart_database = shelve.open('cart.db', 'c')
+        cart_dict = {}
+        if str(current_user.id) in cart_database:
+            cart_dict = cart_database[str(current_user.id)]
+        else:
+            cart_database[str(current_user.id)] = cart_dict
+        del cart_dict[remove]
+        cart_database[str(current_user.id)] = cart_dict
+        return redirect(url_for("user_page.cart"))
+@user_page.route("/cart/remove", methods=["GET","POST"])
+def remove_from_db():
+        remove = request.form.get('uuid')
+        cart_database = shelve.open('cart.db', 'c')
         cart_dict = cart_database[str(current_user.id)]
         product_dict = {}
         product_database = shelve.open('product.db', 'c')
@@ -121,13 +142,12 @@ def remove_from_cart():
         get_product = product_dict[remove]
         inventory_quantity = get_product.get_quantity()
         product_quantity = cart_dict[remove].get_quantity()
-        inventory_quantity = inventory_quantity + product_quantity
+        inventory_quantity = inventory_quantity - product_quantity
         get_product.set_quantity(inventory_quantity)
         product_database['products'] = product_dict
         del cart_dict[remove]
         cart_database[str(current_user.id)] = cart_dict
         return redirect(url_for("user_page.cart"))
-
         
 @user_page.route("/purchased")
 
@@ -285,17 +305,18 @@ def logout():
     logout_user()
     return redirect(url_for("login_register.user_login"))
 
-'''@user_page.route('/wishlist')
+@user_page.route('/wishlist', methods=['GET','POST']) # add from here to the end
 def wishlist():
+    wishlist_database = shelve.open('wishlist.db', 'c')
+    wishlist_dict = {}
+    if str(current_user.id) in wishlist_database:
+        wishlist_dict = wishlist_database[str(current_user.id)]
+    else:
+        wishlist_database[str(current_user.id)] = wishlist_dict
     if request.method == "POST":
-        wishlist_database = shelve.open('wishlist.db', 'c')
+        flash("Wishlist item has been added")
         product_database = shelve.open('product.db', 'c')
-        wishlist_dict = {}
         product_dict = {}
-        if str(current_user.id) in wishlist_database:
-            wishlist_dict = wishlist_database[str(current_user.id)]
-        else:
-            wishlist_database[str(current_user.id)] = wishlist_dict
         if 'products' in product_database:
             product_dict = product_database['products']
         else:
@@ -303,7 +324,57 @@ def wishlist():
   
         obj = product_dict[request.form.get('wishlist')]
         wishlist_dict[request.form.get('wishlist')] = obj
-'''
+        wishlist_database[str(current_user.id)] = wishlist_dict
+
+    return render_template("page-wishlist.html", wishlist_dict=wishlist_dict)
+
+
+
+@user_page.route('/wishlist/delete', methods=['GET', 'POST'])
+def delete():
+    if request.method == "POST":   
+        flash("Wishlist item has been removed")
+        wishlist_dict = {}
+        wishlist_database = shelve.open('wishlist.db', 'c')
+        if str(current_user.id) in wishlist_database:
+            wishlist_dict = wishlist_database[str(current_user.id)]
+        del wishlist_dict[request.form.get('uuid')]
+        wishlist_database[str(current_user.id)] = wishlist_dict
+        return redirect(url_for("user_page.wishlist"))
+
+@user_page.route("/wishlist/addtocart", methods=["GET", "POST"])
+def wishlist_addtocart():
+    try:
+        product_dict = {}
+        product_database = shelve.open('product.db', 'c')
+        if 'products' in product_database:
+            product_dict = product_database['products']
+        else:
+            product_database['products'] = product_dict
+    except Exception as e:
+        flash(f"{e}", category='error')
+    if request.method == "POST":
+        try:
+            cart_dict = {}
+            cart_database = shelve.open('cart.db', 'c')
+            if str(current_user.id) in cart_database:
+                cart_dict = cart_database[str(current_user.id)]
+            else:
+                cart_database[str(current_user.id)] = cart_dict
+        except Exception as e:
+            flash(f"{e}", category='error')
+        else:
+            if request.form.get('uuid') not in cart_dict:
+                cart_dict[request.form.get('uuid')] = Product(name = product_dict[request.form.get('uuid')].get_name(), quantity = int(request.form.get('quantity')), description = product_dict[request.form.get('uuid')].get_description(), price = product_dict[request.form.get('uuid')].get_price() )
+            else:
+                cart_dict[request.form.get('uuid')].set_quantity(cart_dict[request.form.get('uuid')].get_quantity() + int(request.form.get('quantity')))
+                  
+            flash("Item has been added!", category='success')
+            cart_database[str(current_user.id)] = cart_dict
+            product_dict[request.form.get('uuid')].set_quantity(product_dict[request.form.get('uuid')].get_quantity() - int(request.form.get('quantity'))) 
+            product_database['products'] = product_dict
+            cart_database.close()
+            return redirect(url_for("user_page.wishlist"))
         
 
         

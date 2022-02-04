@@ -17,26 +17,19 @@ endblock %} {% block content %}
             width: 0;
           "
         ></p>
-        Insert image (later feature)
+        <img style="margin-bottom: 100px"src="data:image/jpeg;base64, {{product_dict[x].get_image()}}" height="200px" width="200px">
         <hr />
         <p class="m-0"><b>Description:</b>{{product_dict[x].get_description()}}</p>
         <b>Quantity:</b> {{product_dict[x].get_quantity()}}
         <p><b>Price:</b> ${{product_dict[x].get_price()}}</p>
        
-       
-        <form action="/staff/deleteNotes" class="d-inline-block" method="POST">
-          <input type="hidden" name="uuid" value="a" />
+        <form action="/staff/deleteProduct" class="d-inline-block" method="POST">
+          <input type="hidden" name="uuid" value="{{product_dict[x].get_id()}}" />
           <button type="submit" class="btn btn-danger">Delete</button>
         </form>
 
-        <button
-          type="button"
-          class="btn btn-primary"
-          data-toggle="modal"
-          data-target="#M-a"
-        >
-          Update
-        </button>
+        <a class="btn btn-primary d-inline-block" href="/staff/updateProduct/{{product_dict[x].get_id()}}">Update</a>
+
       </div>
     </div>
     {% endfor %}
