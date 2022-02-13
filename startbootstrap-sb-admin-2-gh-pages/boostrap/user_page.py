@@ -31,6 +31,7 @@ def main_html():
 @user_page.route("/products", methods=["GET", "POST"])
 def products():
     try:
+        search = request.args.get('search')
         product_dict = {}
         product_database = shelve.open('product.db', 'c')
         if 'products' in product_database:
@@ -53,17 +54,18 @@ def products():
             if request.form.get('uuid') not in cart_dict:
                 cart_dict[request.form.get('uuid')] = Product(name = product_dict[request.form.get('uuid')].get_name(), quantity = int(request.form.get('quantity')), description = product_dict[request.form.get('uuid')].get_description(), price = product_dict[request.form.get('uuid')].get_price() )
             else:
-                cart_dict[request.form.get('uuid')].set_quantity(cart_dict[request.form.get('uuid')].get_quantity() + int(request.form.get('quantity')))
+                cart_dict[request.form.get('uuid')].set_quantity(min(cart_dict[request.form.get('uuid')].get_quantity() + int(request.form.get('quantity')), product_dict[request.form.get('uuid')].get_quantity()))
                   
             flash("Item has been added!", category='success')
             cart_database[str(current_user.id)] = cart_dict
-            product_dict[request.form.get('uuid')].set_quantity(product_dict[request.form.get('uuid')].get_quantity() - int(request.form.get('quantity'))) 
+            #product_dict[request.form.get('uuid')].set_quantity(product_dict[request.form.get('uuid')].get_quantity() - int(request.form.get('quantity')))
             product_database['products'] = product_dict
             cart_database.close()
             return redirect(url_for("user_page.products"))
+        
     product_database.close()
 
-    return render_template("page-listing-grid.html", product_dict=product_dict)
+    return render_template("page-listing-grid.html", product_dict=product_dict, search = search)
 
 
 @user_page.route("/cart", methods=["GET", "POST"])
@@ -145,8 +147,17 @@ def remove_from_db():
         inventory_quantity = inventory_quantity - product_quantity
         get_product.set_quantity(inventory_quantity)
         product_database['products'] = product_dict
+        total = sum([x.get_quantity() * x.get_price() for x in cart_dict.values()])
         del cart_dict[remove]
         cart_database[str(current_user.id)] = cart_dict
+        if total > current_user.money:
+            flash("Not enough money! Please deposit more.", category='error')
+        else:
+            current_user.money -= total
+            db.session.commit()
+            flash("Money paid", category="success")
+            return redirect(url_for('user_page.cart'))
+
         return redirect(url_for("user_page.cart"))
         
 @user_page.route("/purchased")
@@ -375,8 +386,3 @@ def wishlist_addtocart():
             product_database['products'] = product_dict
             cart_database.close()
             return redirect(url_for("user_page.wishlist"))
-        
-
-        
-        
-

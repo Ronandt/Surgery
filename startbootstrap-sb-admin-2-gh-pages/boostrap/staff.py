@@ -673,7 +673,7 @@ def addSupplier():
         supplier.set_product_in_charge(
             str(add_suppliers.products.data).replace(" ", "").split(","))
         supplier.set_description(add_suppliers.suppliers_description.data)
-        log = ActionLog(description = supplier, title="Staff has added a product", user=current_user.username, action="Add")
+        log = ActionLog(description = supplier, title="Staff has added a supplier", user=current_user.username, action="Add")
         log_dict[log.get_id()] = log
         log_database['log'] = log_dict
         log_database.close()
@@ -877,3 +877,16 @@ def deleteMail():
             mail_database[str(current_user.id)] = mail_dict_user
             mail_database.close()
     return redirect(url_for("staff.mail"))
+
+@staff.route('/logs/view/<string:uuid>', methods=['GET', 'POST'])
+def viewLog(uuid):
+    log_database = shelve.open('log.db', 'c')
+    log_dict = {}
+    if 'log' in log_database:
+        log_dict = log_database['log']
+    else:
+        log_database['log'] = log_dict
+   
+    attrs = log_dict[uuid].get_description().get_attributes()
+    return render_template('staff-logview.html', attrs= attrs, names = type(log_dict[uuid].get_description()).__name__)
+    

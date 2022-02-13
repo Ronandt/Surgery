@@ -57,10 +57,10 @@
                              
                                           
             
-                                            <td><form action="" class="d-inline-block" method="POST">
-                                                <input type="hidden" name="id" value="{{ x.id }}">
-                                                
-                                            <button type="submit" class="btn btn-info">More Info</button>   
+                                            <td>
+                                                <form action="" class="d-inline-block" method="POST">
+                    
+                                                <a class="btn btn-info" href="/staff/logs/view/{{x.get_id()}}"> More Info </a> 
                                             </form>
                                             </td>
                                         </tr>

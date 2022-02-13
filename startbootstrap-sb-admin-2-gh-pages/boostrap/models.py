@@ -45,6 +45,9 @@ class BaseMessage:
 
     def set_description(self, description):
         self.__description = description
+    
+    def get_attributes(self):
+        return [attr for attr in dir(self) if not attr.startswith("__")]
 
 
 class Message(BaseMessage):

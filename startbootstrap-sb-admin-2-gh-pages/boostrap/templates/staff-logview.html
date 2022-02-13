@@ -1,0 +1,46 @@
+{% extends "utilities-blank-base.html" %}
+{% from "./partials/FormMacros.html" import render_field %}
+{% block title %}View Mail{% endblock %}
+{% block content %} 
+<p  style="margin-left: 25px;"> <a href="{{url_for('staff.logs')}}"><i class="fas fa-arrow-left"></i><span style="display: inline-block; margin-left: 5px;">Back</span></a></p>
+<div class="container">
+ 
+    <div class="card o-hidden border-0 shadow-lg my-5">
+        <div class="card-body p-0">
+            <!-- Nested Row within Card Body -->
+           
+                
+            
+                    <div class="p-5">
+                        <div class="text-center">
+             
+                            <h1 class="h4 text-gray-900 mb-4">{{names}} Class</h1>
+                            
+                        </div>
+                      
+                        <hr>
+                        {% for x in attrs %}
+                        <div class="text-center">
+                            <a class="small" style="font-size: 17px;" href="#">{{x}}</a>
+                        </div>
+                        {% endfor %}
+                        <hr>
+       
+                       
+                      
+               
+                    </div>
+         
+           
+        </div>
+    </div>
+
+
+</div>
+
+
+
+
+ 
+{% endblock %}
+
