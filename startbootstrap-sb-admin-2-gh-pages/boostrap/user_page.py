@@ -119,7 +119,6 @@ def cart():
 
  
     return render_template("page-shopping-cart.html", cart_dict = cart_dict, product_dict= product_dict, total = total)
-
 @user_page.route("/cart/delete", methods=["GET","POST"])
 def remove_from_cart():
     if request.method == "POST":
@@ -144,16 +143,20 @@ def remove_from_db():
         get_product = product_dict[remove]
         inventory_quantity = get_product.get_quantity()
         product_quantity = cart_dict[remove].get_quantity()
-        inventory_quantity = inventory_quantity - product_quantity
-        get_product.set_quantity(inventory_quantity)
-        product_database['products'] = product_dict
+        #inventory_quantity = inventory_quantity - product_quantity
+        #get_product.set_quantity(inventory_quantity)
+        #product_database['products'] = product_dict
         total = sum([x.get_quantity() * x.get_price() for x in cart_dict.values()])
-        del cart_dict[remove]
-        cart_database[str(current_user.id)] = cart_dict
         if total > current_user.money:
+            cart_database[str(current_user.id)] = cart_dict
             flash("Not enough money! Please deposit more.", category='error')
         else:
             current_user.money -= total
+            inventory_quantity = inventory_quantity - product_quantity
+            get_product.set_quantity(inventory_quantity)
+            product_database['products'] = product_dict
+            del cart_dict[remove]
+            cart_database[str(current_user.id)] = cart_dict
             db.session.commit()
             flash("Money paid", category="success")
             return redirect(url_for('user_page.cart'))
